@@ -1,10 +1,16 @@
+// src/app/[userId]/setup/page.tsx
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
-export default function SetupPage({ params }: { params: { userId: string } }) {
+export default function SetupPage() {
   const router = useRouter();
+
+  // New 🆕  — unwrap params with the hook
+  const { userId } = useParams<{ userId: string }>();
+  // If you kept the folder name [userID], change the generic accordingly
+
   const [name, setName] = useState("");
   const [persona, setPersona] = useState("");
 
@@ -13,13 +19,13 @@ export default function SetupPage({ params }: { params: { userId: string } }) {
     await fetch("/api/profile", {
       method: "POST",
       body: JSON.stringify({
-        id: Number(params.userId),
+        id: Number(userId),          // ← now safe
         name,
         persona,
       }),
     });
 
-    router.push(`/${params.userId}`); // dashboard
+    router.push(`/${userId}`);       // back to dashboard
   }
 
   return (
@@ -28,25 +34,29 @@ export default function SetupPage({ params }: { params: { userId: string } }) {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          className="input w-full"
+          className="border rounded px-3 py-2 w-full"
           placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
         <select
-          className="select w-full"
+          className="border rounded px-3 py-2 w-full"
           value={persona}
           onChange={(e) => setPersona(e.target.value)}
           required
         >
-          <option value="" disabled>Select persona</option>
+          <option value="" disabled>
+            Select persona
+          </option>
           <option value="Athlete">Athlete</option>
           <option value="Vegetarian">Vegetarian</option>
           <option value="Default">Something else</option>
         </select>
 
-        <button className="btn w-full">Create profile</button>
+        <button className="border rounded px-3 py-2 w-full">
+          Create profile
+        </button>
       </form>
     </main>
   );
