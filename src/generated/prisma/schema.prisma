@@ -1,0 +1,48 @@
+// prisma/schema.prisma
+//
+// Switch to SQLite for a simple embedded DB.
+// The file will appear at prisma/dev.db by default.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL") // <-- will point to dev.db
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  name      String
+  persona   String? // "Athlete", "Vegetarian", etc.
+  createdAt DateTime @default(now())
+
+  pantry  Ingredient[]
+  recipes Recipe[]
+}
+
+model Ingredient {
+  id        Int       @id @default(autoincrement())
+  name      String
+  quantity  Float?
+  unit      String?
+  expiresAt DateTime?
+  // --- relations ---
+  profile   Profile   @relation(fields: [profileId], references: [id])
+  profileId Int
+  recipe    Recipe?   @relation(fields: [recipeId], references: [id])
+  recipeId  Int?
+}
+
+model Recipe {
+  id           Int          @id @default(autoincrement())
+  title        String
+  instructions String
+  createdAt    DateTime     @default(now())
+  // --- relations ---
+  profile      Profile?     @relation(fields: [profileId], references: [id])
+  profileId    Int?
+  ingredients  Ingredient[]
+}

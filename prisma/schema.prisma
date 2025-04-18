@@ -1,8 +1,7 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// prisma/schema.prisma
+//
+// Switch to SQLite for a simple embedded DB.
+// The file will appear at prisma/dev.db by default.
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +9,40 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = env("DATABASE_URL")   // <-- will point to dev.db
+}
+
+model Profile {
+  id        Int      @id @default(autoincrement())
+  name      String
+  persona   String?        // "Athlete", "Vegetarian", etc.
+  createdAt DateTime @default(now())
+
+  pantry     Ingredient[]
+  recipes    Recipe[]
+}
+
+model Ingredient {
+  id        Int      @id @default(autoincrement())
+  name      String
+  quantity  Float?
+  unit      String?
+  expiresAt DateTime?
+  // --- relations ---
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId Int
+  recipe    Recipe? @relation(fields: [recipeId], references: [id])
+  recipeId  Int?
+}
+
+model Recipe {
+  id           Int      @id @default(autoincrement())
+  title        String
+  instructions String
+  createdAt    DateTime @default(now())
+  // --- relations ---
+  profile   Profile?    @relation(fields: [profileId], references: [id])
+  profileId Int?
+  ingredients Ingredient[]
 }
