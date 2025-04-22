@@ -118,6 +118,11 @@ exports.Prisma.ProfileScalarFieldEnum = {
   id: 'id',
   name: 'name',
   persona: 'persona',
+  dietaryRestrictions: 'dietaryRestrictions',
+  allergies: 'allergies',
+  cuisinePreferences: 'cuisinePreferences',
+  workoutFrequency: 'workoutFrequency',
+  workoutIntensity: 'workoutIntensity',
   createdAt: 'createdAt'
 };
 
@@ -134,7 +139,12 @@ exports.Prisma.IngredientScalarFieldEnum = {
 exports.Prisma.RecipeScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  cuisine: 'cuisine',
+  source: 'source',
   instructions: 'instructions',
+  cookTime: 'cookTime',
+  dietaryInfo: 'dietaryInfo',
+  nutrition: 'nutrition',
   createdAt: 'createdAt',
   profileId: 'profileId'
 };
@@ -142,6 +152,22 @@ exports.Prisma.RecipeScalarFieldEnum = {
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
 };
 
 exports.Prisma.NullsOrder = {

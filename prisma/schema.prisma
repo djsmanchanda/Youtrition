@@ -10,39 +10,54 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")   // <-- will point to dev.db
+  url      = env("DATABASE_URL") // <-- will point to dev.db
 }
 
 model Profile {
   id        Int      @id @default(autoincrement())
   name      String
-  persona   String?        // "Athlete", "Vegetarian", etc.
+  persona   String?
+  // New fields:
+  dietaryRestrictions Json?     // array of strings
+  allergies           Json?
+  cuisinePreferences  Json?
+  workoutFrequency    Int?
+  workoutIntensity    Int?
   createdAt DateTime @default(now())
 
   pantry     Ingredient[]
   recipes    Recipe[]
 }
 
+
 model Ingredient {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   name      String
   quantity  Float?
   unit      String?
   expiresAt DateTime?
   // --- relations ---
-  profile   Profile @relation(fields: [profileId], references: [id])
+  profile   Profile   @relation(fields: [profileId], references: [id])
   profileId Int
-  recipe    Recipe? @relation(fields: [recipeId], references: [id])
+  recipe    Recipe?   @relation(fields: [recipeId], references: [id])
   recipeId  Int?
 }
 
 model Recipe {
   id           Int      @id @default(autoincrement())
   title        String
+  cuisine      String? // "Mexican", "Thai", …
+  source       String   @default("seed") // "seed" | "gpt"
   instructions String
+  cookTime     Int? // minutes
+  dietaryInfo  String?
+  nutrition    Json? // store the dict returned by nutrition API
   createdAt    DateTime @default(now())
-  // --- relations ---
-  profile   Profile?    @relation(fields: [profileId], references: [id])
+
+  /// relation back to Profile -------------
+  profile   Profile? @relation(fields: [profileId], references: [id])
   profileId Int?
+  /// -----------------------------------------
+
   ingredients Ingredient[]
 }

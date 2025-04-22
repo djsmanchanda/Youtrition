@@ -37,12 +37,20 @@ model Ingredient {
 }
 
 model Recipe {
-  id           Int          @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   title        String
+  cuisine      String? // "Mexican", "Thai", …
+  source       String   @default("seed") // "seed" | "gpt"
   instructions String
-  createdAt    DateTime     @default(now())
-  // --- relations ---
-  profile      Profile?     @relation(fields: [profileId], references: [id])
-  profileId    Int?
-  ingredients  Ingredient[]
+  cookTime     Int? // minutes
+  dietaryInfo  String?
+  nutrition    Json? // store the dict returned by nutrition API
+  createdAt    DateTime @default(now())
+
+  /// relation back to Profile -------------
+  profile   Profile? @relation(fields: [profileId], references: [id])
+  profileId Int?
+  /// -----------------------------------------
+
+  ingredients Ingredient[]
 }

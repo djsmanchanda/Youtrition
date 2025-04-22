@@ -1135,16 +1135,22 @@ export namespace Prisma {
 
   export type ProfileAvgAggregateOutputType = {
     id: number | null
+    workoutFrequency: number | null
+    workoutIntensity: number | null
   }
 
   export type ProfileSumAggregateOutputType = {
     id: number | null
+    workoutFrequency: number | null
+    workoutIntensity: number | null
   }
 
   export type ProfileMinAggregateOutputType = {
     id: number | null
     name: string | null
     persona: string | null
+    workoutFrequency: number | null
+    workoutIntensity: number | null
     createdAt: Date | null
   }
 
@@ -1152,6 +1158,8 @@ export namespace Prisma {
     id: number | null
     name: string | null
     persona: string | null
+    workoutFrequency: number | null
+    workoutIntensity: number | null
     createdAt: Date | null
   }
 
@@ -1159,6 +1167,11 @@ export namespace Prisma {
     id: number
     name: number
     persona: number
+    dietaryRestrictions: number
+    allergies: number
+    cuisinePreferences: number
+    workoutFrequency: number
+    workoutIntensity: number
     createdAt: number
     _all: number
   }
@@ -1166,16 +1179,22 @@ export namespace Prisma {
 
   export type ProfileAvgAggregateInputType = {
     id?: true
+    workoutFrequency?: true
+    workoutIntensity?: true
   }
 
   export type ProfileSumAggregateInputType = {
     id?: true
+    workoutFrequency?: true
+    workoutIntensity?: true
   }
 
   export type ProfileMinAggregateInputType = {
     id?: true
     name?: true
     persona?: true
+    workoutFrequency?: true
+    workoutIntensity?: true
     createdAt?: true
   }
 
@@ -1183,6 +1202,8 @@ export namespace Prisma {
     id?: true
     name?: true
     persona?: true
+    workoutFrequency?: true
+    workoutIntensity?: true
     createdAt?: true
   }
 
@@ -1190,6 +1211,11 @@ export namespace Prisma {
     id?: true
     name?: true
     persona?: true
+    dietaryRestrictions?: true
+    allergies?: true
+    cuisinePreferences?: true
+    workoutFrequency?: true
+    workoutIntensity?: true
     createdAt?: true
     _all?: true
   }
@@ -1284,6 +1310,11 @@ export namespace Prisma {
     id: number
     name: string
     persona: string | null
+    dietaryRestrictions: JsonValue | null
+    allergies: JsonValue | null
+    cuisinePreferences: JsonValue | null
+    workoutFrequency: number | null
+    workoutIntensity: number | null
     createdAt: Date
     _count: ProfileCountAggregateOutputType | null
     _avg: ProfileAvgAggregateOutputType | null
@@ -1310,6 +1341,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     persona?: boolean
+    dietaryRestrictions?: boolean
+    allergies?: boolean
+    cuisinePreferences?: boolean
+    workoutFrequency?: boolean
+    workoutIntensity?: boolean
     createdAt?: boolean
     pantry?: boolean | Profile$pantryArgs<ExtArgs>
     recipes?: boolean | Profile$recipesArgs<ExtArgs>
@@ -1320,6 +1356,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     persona?: boolean
+    dietaryRestrictions?: boolean
+    allergies?: boolean
+    cuisinePreferences?: boolean
+    workoutFrequency?: boolean
+    workoutIntensity?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -1327,6 +1368,11 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     persona?: boolean
+    dietaryRestrictions?: boolean
+    allergies?: boolean
+    cuisinePreferences?: boolean
+    workoutFrequency?: boolean
+    workoutIntensity?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -1334,10 +1380,15 @@ export namespace Prisma {
     id?: boolean
     name?: boolean
     persona?: boolean
+    dietaryRestrictions?: boolean
+    allergies?: boolean
+    cuisinePreferences?: boolean
+    workoutFrequency?: boolean
+    workoutIntensity?: boolean
     createdAt?: boolean
   }
 
-  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "persona" | "createdAt", ExtArgs["result"]["profile"]>
+  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "persona" | "dietaryRestrictions" | "allergies" | "cuisinePreferences" | "workoutFrequency" | "workoutIntensity" | "createdAt", ExtArgs["result"]["profile"]>
   export type ProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pantry?: boolean | Profile$pantryArgs<ExtArgs>
     recipes?: boolean | Profile$recipesArgs<ExtArgs>
@@ -1356,6 +1407,11 @@ export namespace Prisma {
       id: number
       name: string
       persona: string | null
+      dietaryRestrictions: Prisma.JsonValue | null
+      allergies: Prisma.JsonValue | null
+      cuisinePreferences: Prisma.JsonValue | null
+      workoutFrequency: number | null
+      workoutIntensity: number | null
       createdAt: Date
     }, ExtArgs["result"]["profile"]>
     composites: {}
@@ -1785,6 +1841,11 @@ export namespace Prisma {
     readonly id: FieldRef<"Profile", 'Int'>
     readonly name: FieldRef<"Profile", 'String'>
     readonly persona: FieldRef<"Profile", 'String'>
+    readonly dietaryRestrictions: FieldRef<"Profile", 'Json'>
+    readonly allergies: FieldRef<"Profile", 'Json'>
+    readonly cuisinePreferences: FieldRef<"Profile", 'Json'>
+    readonly workoutFrequency: FieldRef<"Profile", 'Int'>
+    readonly workoutIntensity: FieldRef<"Profile", 'Int'>
     readonly createdAt: FieldRef<"Profile", 'DateTime'>
   }
     
@@ -3407,18 +3468,24 @@ export namespace Prisma {
 
   export type RecipeAvgAggregateOutputType = {
     id: number | null
+    cookTime: number | null
     profileId: number | null
   }
 
   export type RecipeSumAggregateOutputType = {
     id: number | null
+    cookTime: number | null
     profileId: number | null
   }
 
   export type RecipeMinAggregateOutputType = {
     id: number | null
     title: string | null
+    cuisine: string | null
+    source: string | null
     instructions: string | null
+    cookTime: number | null
+    dietaryInfo: string | null
     createdAt: Date | null
     profileId: number | null
   }
@@ -3426,7 +3493,11 @@ export namespace Prisma {
   export type RecipeMaxAggregateOutputType = {
     id: number | null
     title: string | null
+    cuisine: string | null
+    source: string | null
     instructions: string | null
+    cookTime: number | null
+    dietaryInfo: string | null
     createdAt: Date | null
     profileId: number | null
   }
@@ -3434,7 +3505,12 @@ export namespace Prisma {
   export type RecipeCountAggregateOutputType = {
     id: number
     title: number
+    cuisine: number
+    source: number
     instructions: number
+    cookTime: number
+    dietaryInfo: number
+    nutrition: number
     createdAt: number
     profileId: number
     _all: number
@@ -3443,18 +3519,24 @@ export namespace Prisma {
 
   export type RecipeAvgAggregateInputType = {
     id?: true
+    cookTime?: true
     profileId?: true
   }
 
   export type RecipeSumAggregateInputType = {
     id?: true
+    cookTime?: true
     profileId?: true
   }
 
   export type RecipeMinAggregateInputType = {
     id?: true
     title?: true
+    cuisine?: true
+    source?: true
     instructions?: true
+    cookTime?: true
+    dietaryInfo?: true
     createdAt?: true
     profileId?: true
   }
@@ -3462,7 +3544,11 @@ export namespace Prisma {
   export type RecipeMaxAggregateInputType = {
     id?: true
     title?: true
+    cuisine?: true
+    source?: true
     instructions?: true
+    cookTime?: true
+    dietaryInfo?: true
     createdAt?: true
     profileId?: true
   }
@@ -3470,7 +3556,12 @@ export namespace Prisma {
   export type RecipeCountAggregateInputType = {
     id?: true
     title?: true
+    cuisine?: true
+    source?: true
     instructions?: true
+    cookTime?: true
+    dietaryInfo?: true
+    nutrition?: true
     createdAt?: true
     profileId?: true
     _all?: true
@@ -3565,7 +3656,12 @@ export namespace Prisma {
   export type RecipeGroupByOutputType = {
     id: number
     title: string
+    cuisine: string | null
+    source: string
     instructions: string
+    cookTime: number | null
+    dietaryInfo: string | null
+    nutrition: JsonValue | null
     createdAt: Date
     profileId: number | null
     _count: RecipeCountAggregateOutputType | null
@@ -3592,7 +3688,12 @@ export namespace Prisma {
   export type RecipeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
+    cuisine?: boolean
+    source?: boolean
     instructions?: boolean
+    cookTime?: boolean
+    dietaryInfo?: boolean
+    nutrition?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3603,7 +3704,12 @@ export namespace Prisma {
   export type RecipeSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
+    cuisine?: boolean
+    source?: boolean
     instructions?: boolean
+    cookTime?: boolean
+    dietaryInfo?: boolean
+    nutrition?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3612,7 +3718,12 @@ export namespace Prisma {
   export type RecipeSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     title?: boolean
+    cuisine?: boolean
+    source?: boolean
     instructions?: boolean
+    cookTime?: boolean
+    dietaryInfo?: boolean
+    nutrition?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3621,12 +3732,17 @@ export namespace Prisma {
   export type RecipeSelectScalar = {
     id?: boolean
     title?: boolean
+    cuisine?: boolean
+    source?: boolean
     instructions?: boolean
+    cookTime?: boolean
+    dietaryInfo?: boolean
+    nutrition?: boolean
     createdAt?: boolean
     profileId?: boolean
   }
 
-  export type RecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "instructions" | "createdAt" | "profileId", ExtArgs["result"]["recipe"]>
+  export type RecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "cuisine" | "source" | "instructions" | "cookTime" | "dietaryInfo" | "nutrition" | "createdAt" | "profileId", ExtArgs["result"]["recipe"]>
   export type RecipeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     profile?: boolean | Recipe$profileArgs<ExtArgs>
     ingredients?: boolean | Recipe$ingredientsArgs<ExtArgs>
@@ -3642,13 +3758,24 @@ export namespace Prisma {
   export type $RecipePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Recipe"
     objects: {
+      /**
+       * relation back to Profile -------------
+       */
       profile: Prisma.$ProfilePayload<ExtArgs> | null
+      /**
+       * -----------------------------------------
+       */
       ingredients: Prisma.$IngredientPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: number
       title: string
+      cuisine: string | null
+      source: string
       instructions: string
+      cookTime: number | null
+      dietaryInfo: string | null
+      nutrition: Prisma.JsonValue | null
       createdAt: Date
       profileId: number | null
     }, ExtArgs["result"]["recipe"]>
@@ -4078,7 +4205,12 @@ export namespace Prisma {
   interface RecipeFieldRefs {
     readonly id: FieldRef<"Recipe", 'Int'>
     readonly title: FieldRef<"Recipe", 'String'>
+    readonly cuisine: FieldRef<"Recipe", 'String'>
+    readonly source: FieldRef<"Recipe", 'String'>
     readonly instructions: FieldRef<"Recipe", 'String'>
+    readonly cookTime: FieldRef<"Recipe", 'Int'>
+    readonly dietaryInfo: FieldRef<"Recipe", 'String'>
+    readonly nutrition: FieldRef<"Recipe", 'Json'>
     readonly createdAt: FieldRef<"Recipe", 'DateTime'>
     readonly profileId: FieldRef<"Recipe", 'Int'>
   }
@@ -4551,6 +4683,11 @@ export namespace Prisma {
     id: 'id',
     name: 'name',
     persona: 'persona',
+    dietaryRestrictions: 'dietaryRestrictions',
+    allergies: 'allergies',
+    cuisinePreferences: 'cuisinePreferences',
+    workoutFrequency: 'workoutFrequency',
+    workoutIntensity: 'workoutIntensity',
     createdAt: 'createdAt'
   };
 
@@ -4573,7 +4710,12 @@ export namespace Prisma {
   export const RecipeScalarFieldEnum: {
     id: 'id',
     title: 'title',
+    cuisine: 'cuisine',
+    source: 'source',
     instructions: 'instructions',
+    cookTime: 'cookTime',
+    dietaryInfo: 'dietaryInfo',
+    nutrition: 'nutrition',
     createdAt: 'createdAt',
     profileId: 'profileId'
   };
@@ -4587,6 +4729,31 @@ export namespace Prisma {
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+  export const NullableJsonNullValueInput: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull
+  };
+
+  export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull,
+    JsonNull: typeof JsonNull,
+    AnyNull: typeof AnyNull
+  };
+
+  export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+  export const QueryMode: {
+    default: 'default',
+    insensitive: 'insensitive'
+  };
+
+  export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
   export const NullsOrder: {
@@ -4617,6 +4784,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+  /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
@@ -4640,6 +4821,11 @@ export namespace Prisma {
     id?: IntFilter<"Profile"> | number
     name?: StringFilter<"Profile"> | string
     persona?: StringNullableFilter<"Profile"> | string | null
+    dietaryRestrictions?: JsonNullableFilter<"Profile">
+    allergies?: JsonNullableFilter<"Profile">
+    cuisinePreferences?: JsonNullableFilter<"Profile">
+    workoutFrequency?: IntNullableFilter<"Profile"> | number | null
+    workoutIntensity?: IntNullableFilter<"Profile"> | number | null
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     pantry?: IngredientListRelationFilter
     recipes?: RecipeListRelationFilter
@@ -4649,6 +4835,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     persona?: SortOrderInput | SortOrder
+    dietaryRestrictions?: SortOrderInput | SortOrder
+    allergies?: SortOrderInput | SortOrder
+    cuisinePreferences?: SortOrderInput | SortOrder
+    workoutFrequency?: SortOrderInput | SortOrder
+    workoutIntensity?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     pantry?: IngredientOrderByRelationAggregateInput
     recipes?: RecipeOrderByRelationAggregateInput
@@ -4661,6 +4852,11 @@ export namespace Prisma {
     NOT?: ProfileWhereInput | ProfileWhereInput[]
     name?: StringFilter<"Profile"> | string
     persona?: StringNullableFilter<"Profile"> | string | null
+    dietaryRestrictions?: JsonNullableFilter<"Profile">
+    allergies?: JsonNullableFilter<"Profile">
+    cuisinePreferences?: JsonNullableFilter<"Profile">
+    workoutFrequency?: IntNullableFilter<"Profile"> | number | null
+    workoutIntensity?: IntNullableFilter<"Profile"> | number | null
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     pantry?: IngredientListRelationFilter
     recipes?: RecipeListRelationFilter
@@ -4670,6 +4866,11 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     persona?: SortOrderInput | SortOrder
+    dietaryRestrictions?: SortOrderInput | SortOrder
+    allergies?: SortOrderInput | SortOrder
+    cuisinePreferences?: SortOrderInput | SortOrder
+    workoutFrequency?: SortOrderInput | SortOrder
+    workoutIntensity?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: ProfileCountOrderByAggregateInput
     _avg?: ProfileAvgOrderByAggregateInput
@@ -4685,6 +4886,11 @@ export namespace Prisma {
     id?: IntWithAggregatesFilter<"Profile"> | number
     name?: StringWithAggregatesFilter<"Profile"> | string
     persona?: StringNullableWithAggregatesFilter<"Profile"> | string | null
+    dietaryRestrictions?: JsonNullableWithAggregatesFilter<"Profile">
+    allergies?: JsonNullableWithAggregatesFilter<"Profile">
+    cuisinePreferences?: JsonNullableWithAggregatesFilter<"Profile">
+    workoutFrequency?: IntNullableWithAggregatesFilter<"Profile"> | number | null
+    workoutIntensity?: IntNullableWithAggregatesFilter<"Profile"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Profile"> | Date | string
   }
 
@@ -4764,7 +4970,12 @@ export namespace Prisma {
     NOT?: RecipeWhereInput | RecipeWhereInput[]
     id?: IntFilter<"Recipe"> | number
     title?: StringFilter<"Recipe"> | string
+    cuisine?: StringNullableFilter<"Recipe"> | string | null
+    source?: StringFilter<"Recipe"> | string
     instructions?: StringFilter<"Recipe"> | string
+    cookTime?: IntNullableFilter<"Recipe"> | number | null
+    dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
+    nutrition?: JsonNullableFilter<"Recipe">
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
@@ -4774,7 +4985,12 @@ export namespace Prisma {
   export type RecipeOrderByWithRelationInput = {
     id?: SortOrder
     title?: SortOrder
+    cuisine?: SortOrderInput | SortOrder
+    source?: SortOrder
     instructions?: SortOrder
+    cookTime?: SortOrderInput | SortOrder
+    dietaryInfo?: SortOrderInput | SortOrder
+    nutrition?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     profileId?: SortOrderInput | SortOrder
     profile?: ProfileOrderByWithRelationInput
@@ -4787,7 +5003,12 @@ export namespace Prisma {
     OR?: RecipeWhereInput[]
     NOT?: RecipeWhereInput | RecipeWhereInput[]
     title?: StringFilter<"Recipe"> | string
+    cuisine?: StringNullableFilter<"Recipe"> | string | null
+    source?: StringFilter<"Recipe"> | string
     instructions?: StringFilter<"Recipe"> | string
+    cookTime?: IntNullableFilter<"Recipe"> | number | null
+    dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
+    nutrition?: JsonNullableFilter<"Recipe">
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
@@ -4797,7 +5018,12 @@ export namespace Prisma {
   export type RecipeOrderByWithAggregationInput = {
     id?: SortOrder
     title?: SortOrder
+    cuisine?: SortOrderInput | SortOrder
+    source?: SortOrder
     instructions?: SortOrder
+    cookTime?: SortOrderInput | SortOrder
+    dietaryInfo?: SortOrderInput | SortOrder
+    nutrition?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     profileId?: SortOrderInput | SortOrder
     _count?: RecipeCountOrderByAggregateInput
@@ -4813,7 +5039,12 @@ export namespace Prisma {
     NOT?: RecipeScalarWhereWithAggregatesInput | RecipeScalarWhereWithAggregatesInput[]
     id?: IntWithAggregatesFilter<"Recipe"> | number
     title?: StringWithAggregatesFilter<"Recipe"> | string
+    cuisine?: StringNullableWithAggregatesFilter<"Recipe"> | string | null
+    source?: StringWithAggregatesFilter<"Recipe"> | string
     instructions?: StringWithAggregatesFilter<"Recipe"> | string
+    cookTime?: IntNullableWithAggregatesFilter<"Recipe"> | number | null
+    dietaryInfo?: StringNullableWithAggregatesFilter<"Recipe"> | string | null
+    nutrition?: JsonNullableWithAggregatesFilter<"Recipe">
     createdAt?: DateTimeWithAggregatesFilter<"Recipe"> | Date | string
     profileId?: IntNullableWithAggregatesFilter<"Recipe"> | number | null
   }
@@ -4821,6 +5052,11 @@ export namespace Prisma {
   export type ProfileCreateInput = {
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     pantry?: IngredientCreateNestedManyWithoutProfileInput
     recipes?: RecipeCreateNestedManyWithoutProfileInput
@@ -4830,6 +5066,11 @@ export namespace Prisma {
     id?: number
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     pantry?: IngredientUncheckedCreateNestedManyWithoutProfileInput
     recipes?: RecipeUncheckedCreateNestedManyWithoutProfileInput
@@ -4838,6 +5079,11 @@ export namespace Prisma {
   export type ProfileUpdateInput = {
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUpdateManyWithoutProfileNestedInput
     recipes?: RecipeUpdateManyWithoutProfileNestedInput
@@ -4847,6 +5093,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUncheckedUpdateManyWithoutProfileNestedInput
     recipes?: RecipeUncheckedUpdateManyWithoutProfileNestedInput
@@ -4856,12 +5107,22 @@ export namespace Prisma {
     id?: number
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
   }
 
   export type ProfileUpdateManyMutationInput = {
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4869,6 +5130,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4939,7 +5205,12 @@ export namespace Prisma {
 
   export type RecipeCreateInput = {
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutRecipesInput
     ingredients?: IngredientCreateNestedManyWithoutRecipeInput
@@ -4948,7 +5219,12 @@ export namespace Prisma {
   export type RecipeUncheckedCreateInput = {
     id?: number
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     profileId?: number | null
     ingredients?: IngredientUncheckedCreateNestedManyWithoutRecipeInput
@@ -4956,7 +5232,12 @@ export namespace Prisma {
 
   export type RecipeUpdateInput = {
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutRecipesNestedInput
     ingredients?: IngredientUpdateManyWithoutRecipeNestedInput
@@ -4965,7 +5246,12 @@ export namespace Prisma {
   export type RecipeUncheckedUpdateInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
     ingredients?: IngredientUncheckedUpdateManyWithoutRecipeNestedInput
@@ -4974,21 +5260,36 @@ export namespace Prisma {
   export type RecipeCreateManyInput = {
     id?: number
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     profileId?: number | null
   }
 
   export type RecipeUpdateManyMutationInput = {
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type RecipeUncheckedUpdateManyInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -5031,6 +5332,35 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
+  export type JsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
 
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -5072,17 +5402,26 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     persona?: SortOrder
+    dietaryRestrictions?: SortOrder
+    allergies?: SortOrder
+    cuisinePreferences?: SortOrder
+    workoutFrequency?: SortOrder
+    workoutIntensity?: SortOrder
     createdAt?: SortOrder
   }
 
   export type ProfileAvgOrderByAggregateInput = {
     id?: SortOrder
+    workoutFrequency?: SortOrder
+    workoutIntensity?: SortOrder
   }
 
   export type ProfileMaxOrderByAggregateInput = {
     id?: SortOrder
     name?: SortOrder
     persona?: SortOrder
+    workoutFrequency?: SortOrder
+    workoutIntensity?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -5090,11 +5429,15 @@ export namespace Prisma {
     id?: SortOrder
     name?: SortOrder
     persona?: SortOrder
+    workoutFrequency?: SortOrder
+    workoutIntensity?: SortOrder
     createdAt?: SortOrder
   }
 
   export type ProfileSumOrderByAggregateInput = {
     id?: SortOrder
+    workoutFrequency?: SortOrder
+    workoutIntensity?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
@@ -5146,6 +5489,43 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+  export type JsonNullableWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, Exclude<keyof Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>,
+        Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonNullableWithAggregatesFilterBase<$PrismaModel>>, 'path'>>
+
+  export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedJsonNullableFilter<$PrismaModel>
+    _max?: NestedJsonNullableFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
@@ -5181,17 +5561,6 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
-  }
-
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type ProfileScalarRelationFilter = {
@@ -5278,22 +5647,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
   export type ProfileNullableScalarRelationFilter = {
     is?: ProfileWhereInput | null
     isNot?: ProfileWhereInput | null
@@ -5302,20 +5655,30 @@ export namespace Prisma {
   export type RecipeCountOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
+    cuisine?: SortOrder
+    source?: SortOrder
     instructions?: SortOrder
+    cookTime?: SortOrder
+    dietaryInfo?: SortOrder
+    nutrition?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
 
   export type RecipeAvgOrderByAggregateInput = {
     id?: SortOrder
+    cookTime?: SortOrder
     profileId?: SortOrder
   }
 
   export type RecipeMaxOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
+    cuisine?: SortOrder
+    source?: SortOrder
     instructions?: SortOrder
+    cookTime?: SortOrder
+    dietaryInfo?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
@@ -5323,13 +5686,18 @@ export namespace Prisma {
   export type RecipeMinOrderByAggregateInput = {
     id?: SortOrder
     title?: SortOrder
+    cuisine?: SortOrder
+    source?: SortOrder
     instructions?: SortOrder
+    cookTime?: SortOrder
+    dietaryInfo?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
 
   export type RecipeSumOrderByAggregateInput = {
     id?: SortOrder
+    cookTime?: SortOrder
     profileId?: SortOrder
   }
 
@@ -5367,6 +5735,14 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -5479,14 +5855,6 @@ export namespace Prisma {
     update?: XOR<XOR<RecipeUpdateToOneWithWhereWithoutIngredientsInput, RecipeUpdateWithoutIngredientsInput>, RecipeUncheckedUpdateWithoutIngredientsInput>
   }
 
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
-  }
-
   export type ProfileCreateNestedOneWithoutRecipesInput = {
     create?: XOR<ProfileCreateWithoutRecipesInput, ProfileUncheckedCreateWithoutRecipesInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutRecipesInput
@@ -5584,6 +5952,17 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[]
@@ -5655,8 +6034,26 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
+  export type NestedJsonNullableFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
+        Required<NestedJsonNullableFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>
 
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
+  export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
+    equals?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+    path?: string
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>
+    string_contains?: string | StringFieldRefInput<$PrismaModel>
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null
+    not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | null
     notIn?: number[] | null
@@ -5664,7 +6061,23 @@ export namespace Prisma {
     lte?: number | IntFieldRefInput<$PrismaModel>
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | null
+    notIn?: number[] | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -5679,17 +6092,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -5733,22 +6135,6 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | null
-    notIn?: number[] | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
   export type IngredientCreateWithoutProfileInput = {
     name: string
     quantity?: number | null
@@ -5777,7 +6163,12 @@ export namespace Prisma {
 
   export type RecipeCreateWithoutProfileInput = {
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     ingredients?: IngredientCreateNestedManyWithoutRecipeInput
   }
@@ -5785,7 +6176,12 @@ export namespace Prisma {
   export type RecipeUncheckedCreateWithoutProfileInput = {
     id?: number
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     ingredients?: IngredientUncheckedCreateNestedManyWithoutRecipeInput
   }
@@ -5850,7 +6246,12 @@ export namespace Prisma {
     NOT?: RecipeScalarWhereInput | RecipeScalarWhereInput[]
     id?: IntFilter<"Recipe"> | number
     title?: StringFilter<"Recipe"> | string
+    cuisine?: StringNullableFilter<"Recipe"> | string | null
+    source?: StringFilter<"Recipe"> | string
     instructions?: StringFilter<"Recipe"> | string
+    cookTime?: IntNullableFilter<"Recipe"> | number | null
+    dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
+    nutrition?: JsonNullableFilter<"Recipe">
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
   }
@@ -5858,6 +6259,11 @@ export namespace Prisma {
   export type ProfileCreateWithoutPantryInput = {
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     recipes?: RecipeCreateNestedManyWithoutProfileInput
   }
@@ -5866,6 +6272,11 @@ export namespace Prisma {
     id?: number
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     recipes?: RecipeUncheckedCreateNestedManyWithoutProfileInput
   }
@@ -5877,7 +6288,12 @@ export namespace Prisma {
 
   export type RecipeCreateWithoutIngredientsInput = {
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutRecipesInput
   }
@@ -5885,7 +6301,12 @@ export namespace Prisma {
   export type RecipeUncheckedCreateWithoutIngredientsInput = {
     id?: number
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     profileId?: number | null
   }
@@ -5909,6 +6330,11 @@ export namespace Prisma {
   export type ProfileUpdateWithoutPantryInput = {
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recipes?: RecipeUpdateManyWithoutProfileNestedInput
   }
@@ -5917,6 +6343,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recipes?: RecipeUncheckedUpdateManyWithoutProfileNestedInput
   }
@@ -5934,7 +6365,12 @@ export namespace Prisma {
 
   export type RecipeUpdateWithoutIngredientsInput = {
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutRecipesNestedInput
   }
@@ -5942,7 +6378,12 @@ export namespace Prisma {
   export type RecipeUncheckedUpdateWithoutIngredientsInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -5950,6 +6391,11 @@ export namespace Prisma {
   export type ProfileCreateWithoutRecipesInput = {
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     pantry?: IngredientCreateNestedManyWithoutProfileInput
   }
@@ -5958,6 +6404,11 @@ export namespace Prisma {
     id?: number
     name: string
     persona?: string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: number | null
+    workoutIntensity?: number | null
     createdAt?: Date | string
     pantry?: IngredientUncheckedCreateNestedManyWithoutProfileInput
   }
@@ -6007,6 +6458,11 @@ export namespace Prisma {
   export type ProfileUpdateWithoutRecipesInput = {
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUpdateManyWithoutProfileNestedInput
   }
@@ -6015,6 +6471,11 @@ export namespace Prisma {
     id?: IntFieldUpdateOperationsInput | number
     name?: StringFieldUpdateOperationsInput | string
     persona?: NullableStringFieldUpdateOperationsInput | string | null
+    dietaryRestrictions?: NullableJsonNullValueInput | InputJsonValue
+    allergies?: NullableJsonNullValueInput | InputJsonValue
+    cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
+    workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
+    workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUncheckedUpdateManyWithoutProfileNestedInput
   }
@@ -6047,7 +6508,12 @@ export namespace Prisma {
   export type RecipeCreateManyProfileInput = {
     id?: number
     title: string
+    cuisine?: string | null
+    source?: string
     instructions: string
+    cookTime?: number | null
+    dietaryInfo?: string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -6079,7 +6545,12 @@ export namespace Prisma {
 
   export type RecipeUpdateWithoutProfileInput = {
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ingredients?: IngredientUpdateManyWithoutRecipeNestedInput
   }
@@ -6087,7 +6558,12 @@ export namespace Prisma {
   export type RecipeUncheckedUpdateWithoutProfileInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ingredients?: IngredientUncheckedUpdateManyWithoutRecipeNestedInput
   }
@@ -6095,7 +6571,12 @@ export namespace Prisma {
   export type RecipeUncheckedUpdateManyWithoutProfileInput = {
     id?: IntFieldUpdateOperationsInput | number
     title?: StringFieldUpdateOperationsInput | string
+    cuisine?: NullableStringFieldUpdateOperationsInput | string | null
+    source?: StringFieldUpdateOperationsInput | string
     instructions?: StringFieldUpdateOperationsInput | string
+    cookTime?: NullableIntFieldUpdateOperationsInput | number | null
+    dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
+    nutrition?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
