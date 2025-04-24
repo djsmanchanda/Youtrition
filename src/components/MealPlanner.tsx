@@ -2,6 +2,7 @@
 "use client";
 import React, { useState, useMemo, useId } from "react";
 import { Button } from "@/components/ui/button";
+import RecipeOptions from "./RecipeOptions";
 
 const ALL_CUISINES = [
   "Italian",
@@ -26,6 +27,30 @@ export type ProfileData = {
   workoutIntensity?: number;
 };
 
+// Define ingredient type for proper typing
+interface Ingredient {
+  name: string;
+  quantity?: number;
+  unit?: string;
+}
+
+// Define recipe type for proper typing
+interface Recipe {
+  id: string;
+  title: string;
+  cuisine: string;
+  instructions: string;
+  cookTime: number;
+  dietaryInfo?: string;
+  ingredients: Ingredient[];
+  nutrition?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+  } | string;
+}
+
 type MealPlannerProps = {
   profile: ProfileData;
 };
@@ -39,7 +64,6 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   const isAthlete = profile.persona === "Athlete";
 
   // Generate cuisine options with randomization that remains stable during component lifecycle
-  // This will randomize only on initial render or page refresh
   const options = useMemo(() => {
     let picks = [...userCuisines];
     if (picks.length >= 3) {
@@ -63,8 +87,10 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   const [calories, setCalories] = useState<number>(500);
   const [macroType, setMacroType] = useState<"Protein-Intensive" | "Carb-Intensive">("Protein-Intensive");
   const [loading, setLoading] = useState<boolean>(false);
-  const [result, setResult] = useState<any | null>(null);
+  const [recipeOptions, setRecipeOptions] = useState<Recipe[] | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [stage, setStage] = useState<"form" | "options" | "result">("form");
 
   // Memoize the payload to prevent unnecessary recalculations
   const payload = useMemo(() => {
@@ -75,13 +101,12 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
     };
   }, [profile, selectedCuisine, customCuisine, mealType, todayWorkout, calories, macroType]);
 
-
+  // Generate multiple recipe options
   async function handleSubmit() {
     setLoading(true);
     setError(null);
     
     try {
-      // Make sure the URL matches exactly what Next.js expects for API routes
       const res = await fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -91,17 +116,52 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
       const data = await res.json();
       
       if (!res.ok) {
-        throw new Error(data.error || "Failed to generate meal plan");
+        throw new Error(data.error || "Failed to generate recipes");
       }
       
-      setResult(data.result);
+      // Set the recipe options and change to options view
+      setRecipeOptions(data.results);
+      setStage("options");
     } catch (e: any) {
       console.error("API error:", e);
       setError(e.message);
-      setResult(null);
     } finally {
       setLoading(false);
     }
+  }
+
+  // Handle recipe selection
+  async function handleRecipeSelect(recipe: Recipe) {
+    setSelectedRecipe(recipe);
+    setStage("result");
+    
+    // Optionally, you could make an API call to mark this recipe as selected
+    // or perform any other actions needed when a recipe is selected
+    try {
+      await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "select",
+          recipeId: recipe.id
+        }),
+      });
+    } catch (e) {
+      // This is optional, so we don't need to show an error if it fails
+      console.warn("Failed to record recipe selection:", e);
+    }
+  }
+
+  // Go back to options from results
+  function handleBackToOptions() {
+    setStage("options");
+    setSelectedRecipe(null);
+  }
+
+  // Go back to form from options
+  function handleBackToForm() {
+    setStage("form");
+    setRecipeOptions(null);
   }
 
   // Define meal types as a constant to prevent recreating the array on each render
@@ -110,19 +170,24 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
 
   // Format the recipe result for better display
   const renderRecipe = () => {
-    if (!result) return null;
+    if (!selectedRecipe) return null;
     
     // Parse nutrition data if it exists
-    const nutrition = result.nutrition ? 
-      (typeof result.nutrition === 'string' ? 
-        JSON.parse(result.nutrition) : 
-        result.nutrition) : 
+    const nutrition = selectedRecipe.nutrition ? 
+      (typeof selectedRecipe.nutrition === 'string' ? 
+        JSON.parse(selectedRecipe.nutrition) : 
+        selectedRecipe.nutrition) : 
       null;
     
     return (
       <div className="bg-gray-50 p-4 mt-4 rounded">
-        <h3 className="text-xl font-bold mb-2">{result.title}</h3>
-        <div className="text-sm text-gray-600 mb-3">Cuisine: {result.cuisine}</div>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-xl font-bold">{selectedRecipe.title}</h3>
+          <Button variant="outline" size="sm" onClick={handleBackToOptions}>
+            Back to Options
+          </Button>
+        </div>
+        <div className="text-sm text-gray-600 mb-3">Cuisine: {selectedRecipe.cuisine}</div>
         
         {nutrition && (
           <div className="mb-4">
@@ -139,7 +204,7 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
         <div className="mb-4">
           <h4 className="font-semibold mb-1">Ingredients</h4>
           <ul className="list-disc pl-5">
-            {result.ingredients.map((ing, i) => (
+            {selectedRecipe.ingredients.map((ing: Ingredient, i: number) => (
               <li key={i} className="text-sm">
                 {ing.quantity && ing.unit ? 
                   <span className="font-medium">{ing.quantity} {ing.unit}</span> : 
@@ -152,20 +217,20 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
         <div className="mb-4">
           <h4 className="font-semibold mb-1">Instructions</h4>
           <ol className="list-decimal pl-5">
-            {result.instructions.split("\n").map((step, i) => (
+            {selectedRecipe.instructions.split("\n").map((step: string, i: number) => (
               <li key={i} className="text-sm mb-1">{step}</li>
             ))}
           </ol>
         </div>
         
         <div className="flex text-sm text-gray-600">
-          <div>Cook time: {result.cookTime} min</div>
+          <div>Cook time: {selectedRecipe.cookTime} min</div>
         </div>
         
-        {result.dietaryInfo && (
+        {selectedRecipe.dietaryInfo && (
           <div className="mt-3 bg-yellow-50 p-2 rounded">
             <h4 className="font-semibold text-sm">Dietary Information</h4>
-            <p className="text-xs">{result.dietaryInfo}</p>
+            <p className="text-xs">{selectedRecipe.dietaryInfo}</p>
           </div>
         )}
       </div>
@@ -175,94 +240,126 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   return (
     <div className="border rounded p-6 space-y-4">
       <h2 className="text-xl font-semibold">Plan a meal</h2>
-      <div className="flex flex-wrap gap-2">
-        {options.map((c) => (
-          <button
-            key={`${formId}-cuisine-${c}`}
-            type="button"
-            className={`px-3 py-1 rounded ${c === selectedCuisine ? "bg-blue-500 text-white" : "border"}`}
-            onClick={() => setSelectedCuisine(c)}
+      
+      {/* Recipe form - shown in the initial stage */}
+      {stage === "form" && (
+        <>
+          <div className="flex flex-wrap gap-2">
+            {options.map((c) => (
+              <button
+                key={`${formId}-cuisine-${c}`}
+                type="button"
+                className={`px-3 py-1 rounded ${c === selectedCuisine ? "bg-blue-500 text-white" : "border"}`}
+                onClick={() => setSelectedCuisine(c)}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          
+          {selectedCuisine === "Custom..." && (
+            <input
+              type="text"
+              placeholder="Enter a cuisine"
+              value={customCuisine}
+              onChange={(e) => setCustomCuisine(e.target.value)}
+              className="border rounded px-3 py-2 w-full"
+              id={`${formId}-custom-cuisine`}
+            />
+          )}
+          
+          <div className="flex space-x-4">
+            {MEAL_TYPES.map((type) => (
+              <label key={`${formId}-meal-${type}`} className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name={`${formId}-mealType`}
+                  value={type}
+                  checked={mealType === type}
+                  onChange={() => setMealType(type as any)}
+                  id={`${formId}-meal-${type}`}
+                />
+                <span>{type}</span>
+              </label>
+            ))}
+          </div>
+          
+          {isAthlete && (
+            <div>
+              <label htmlFor={`${formId}-workout`} className="block text-sm mb-1">Today's workout intensity (1–10)</label>
+              <input
+                type="range" 
+                min={1} 
+                max={10} 
+                value={todayWorkout}
+                onChange={(e) => setTodayWorkout(Number(e.target.value))}
+                className="w-full"
+                id={`${formId}-workout`}
+              />
+              <div className="text-xs text-center">{todayWorkout}</div>
+            </div>
+          )}
+          
+          <div>
+            <label htmlFor={`${formId}-calories`} className="block text-sm mb-1">Desired calories</label>
+            <input
+              type="range" 
+              min={200} 
+              max={2000} 
+              step={50}
+              value={calories}
+              onChange={(e) => setCalories(Number(e.target.value))}
+              className="w-full"
+              id={`${formId}-calories`}
+            />
+            <div className="text-xs text-center">{calories} kcal</div>
+          </div>
+          
+          <div className="flex space-x-4">
+            {MACRO_TYPES.map((m) => (
+              <label key={`${formId}-macro-${m}`} className="flex items-center space-x-2">
+                <input
+                  type="radio" 
+                  name={`${formId}-macroType`} 
+                  value={m}
+                  checked={macroType === m}
+                  onChange={() => setMacroType(m as any)}
+                  id={`${formId}-macro-${m}`}
+                />
+                <span>{m}</span>
+              </label>
+            ))}
+          </div>
+          
+          <Button 
+            onClick={handleSubmit} 
+            disabled={loading || (selectedCuisine === "Custom..." && !customCuisine)} 
+            className="w-full mt-4"
           >
-            {c}
-          </button>
-        ))}
-      </div>
-      {selectedCuisine === "Custom..." && (
-        <input
-          type="text"
-          placeholder="Enter a cuisine"
-          value={customCuisine}
-          onChange={(e) => setCustomCuisine(e.target.value)}
-          className="border rounded px-3 py-2 w-full"
-          id={`${formId}-custom-cuisine`}
-        />
+            {loading ? "Generating recipes..." : "Generate Recipe Options"}
+          </Button>
+        </>
       )}
-      <div className="flex space-x-4">
-        {MEAL_TYPES.map((type) => (
-          <label key={`${formId}-meal-${type}`} className="flex items-center space-x-2">
-            <input
-              type="radio"
-              name={`${formId}-mealType`}
-              value={type}
-              checked={mealType === type}
-              onChange={() => setMealType(type as any)}
-              id={`${formId}-meal-${type}`}
-            />
-            <span>{type}</span>
-          </label>
-        ))}
-      </div>
-      {isAthlete && (
-        <div>
-          <label htmlFor={`${formId}-workout`} className="block text-sm mb-1">Today's workout intensity (1–10)</label>
-          <input
-            type="range" 
-            min={1} 
-            max={10} 
-            value={todayWorkout}
-            onChange={(e) => setTodayWorkout(Number(e.target.value))}
-            className="w-full"
-            id={`${formId}-workout`}
+      
+      {/* Recipe options - shown after form submission */}
+      {stage === "options" && (
+        <>
+          <div className="mb-4">
+            <Button variant="outline" size="sm" onClick={handleBackToForm}>
+              Back to Recipe Form
+            </Button>
+          </div>
+          
+          <RecipeOptions 
+            recipes={recipeOptions || []} 
+            onSelectRecipe={handleRecipeSelect}
+            isLoading={loading}
           />
-          <div className="text-xs text-center">{todayWorkout}</div>
-        </div>
+        </>
       )}
-      <div>
-        <label htmlFor={`${formId}-calories`} className="block text-sm mb-1">Desired calories</label>
-        <input
-          type="range" 
-          min={200} 
-          max={2000} 
-          step={50}
-          value={calories}
-          onChange={(e) => setCalories(Number(e.target.value))}
-          className="w-full"
-          id={`${formId}-calories`}
-        />
-        <div className="text-xs text-center">{calories} kcal</div>
-      </div>
-      <div className="flex space-x-4">
-        {MACRO_TYPES.map((m) => (
-          <label key={`${formId}-macro-${m}`} className="flex items-center space-x-2">
-            <input
-              type="radio" 
-              name={`${formId}-macroType`} 
-              value={m}
-              checked={macroType === m}
-              onChange={() => setMacroType(m as any)}
-              id={`${formId}-macro-${m}`}
-            />
-            <span>{m}</span>
-          </label>
-        ))}
-      </div>
-      <Button 
-        onClick={handleSubmit} 
-        disabled={loading || (selectedCuisine === "Custom..." && !customCuisine)} 
-        className="w-full mt-4"
-      >
-        {loading ? "Generating meal plan..." : "Submit Plan"}
-      </Button>
+      
+      {/* Selected recipe details - shown after recipe selection */}
+      {stage === "result" && renderRecipe()}
       
       {/* Show error message if any */}
       {error && (
@@ -270,9 +367,6 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
           {error}
         </div>
       )}
-      
-      {/* Display the recipe result */}
-      {result && renderRecipe()}
     </div>
   );
 }

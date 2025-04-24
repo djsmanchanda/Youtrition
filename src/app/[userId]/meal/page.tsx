@@ -5,6 +5,23 @@ import MealClient from "./MealClient";
 import { Suspense } from "react";
 import { unstable_noStore as noStore } from 'next/cache';
 
+// Import the ProfileData type from MealClient to ensure type compatibility
+// If MealClient is in a different location, adjust the import path accordingly
+import { ProfileData as MealClientProfileData } from "@/components/MealPlanner";
+
+// You can keep a local type for transforming database data if needed
+type DbProfileData = {
+  id: number;
+  name: string;
+  persona: string | null;
+  dietaryRestrictions: any;
+  allergies: any;
+  cuisinePreferences: any;
+  workoutFrequency: number | null;
+  workoutIntensity: number | null;
+  createdAt: Date;
+};
+
 type Props = { params: { userId: string } };
 
 export default async function MealPage({ params }: Props) {
@@ -18,12 +35,22 @@ export default async function MealPage({ params }: Props) {
   const profile = await db.profile.findUnique({ where: { id } });
   if (!profile) return notFound();
 
+  // Transform the profile data to match what MealClient expects
+  // Converting null values to undefined where needed
+  const profileData: MealClientProfileData = {
+    ...profile,
+    persona: profile.persona || "Regular", // Provide a default value if null
+    // Convert null to undefined for these properties
+    workoutFrequency: profile.workoutFrequency ?? undefined,
+    workoutIntensity: profile.workoutIntensity ?? undefined
+  };
+
   return (
     <main className="max-w-3xl mx-auto p-6">
       {/* Wrap in Suspense to manage loading states */}
       <Suspense fallback={<div>Loading meal planner...</div>}>
         {/* Add a key with current timestamp to force re-render on refresh */}
-        <MealClient key={Date.now()} profile={profile} />
+        <MealClient key={Date.now()} profile={profileData} />
       </Suspense>
     </main>
   );

@@ -1,6 +1,6 @@
 // src/lib/recipes.ts
 import { db } from "@/lib/db";
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { scoreRecipe } from "@/lib/recommend";
 
 /* ---------- Filter type exported so callers can reuse ---------- */
@@ -16,7 +16,8 @@ export async function getFilteredRecipes(
 ) {
   const { diet = [], allergies = [] } = filter;
 
-  const where: Prisma.RecipeWhereInput = {};
+  // Use a type variable with explicit typing from Prisma
+  const where: any = {}; // Changed from Prisma.RecipeWhereInput
 
   if (diet.length) {
     where.AND = diet.map((d) => ({
