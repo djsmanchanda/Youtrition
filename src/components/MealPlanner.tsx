@@ -3,6 +3,8 @@
 import React, { useState, useMemo, useId } from "react";
 import { Button } from "@/components/ui/button";
 import RecipeOptions from "./RecipeOptions";
+// Import the Recipe type from RecipeOptions to ensure consistency
+import { Recipe as RecipeOptionsRecipe } from "./RecipeOptions";
 
 const ALL_CUISINES = [
   "Italian",
@@ -28,28 +30,14 @@ export type ProfileData = {
 };
 
 // Define ingredient type for proper typing
-interface Ingredient {
+export interface Ingredient {
   name: string;
   quantity?: number;
   unit?: string;
 }
 
-// Define recipe type for proper typing
-interface Recipe {
-  id: string;
-  title: string;
-  cuisine: string;
-  instructions: string;
-  cookTime: number;
-  dietaryInfo?: string;
-  ingredients: Ingredient[];
-  nutrition?: {
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-  } | string;
-}
+// Use the Recipe type from RecipeOptions
+export type Recipe = RecipeOptionsRecipe;
 
 type MealPlannerProps = {
   profile: ProfileData;
@@ -130,21 +118,24 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
     }
   }
 
-  // Handle recipe selection
-  async function handleRecipeSelect(recipe: Recipe) {
+  // Handle recipe selection - match the function signature from RecipeOptions
+  function handleRecipeSelect(recipe: Recipe) {
     setSelectedRecipe(recipe);
     setStage("result");
     
     // Optionally, you could make an API call to mark this recipe as selected
     // or perform any other actions needed when a recipe is selected
     try {
-      await fetch("/api/plan", {
+      fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "select",
           recipeId: recipe.id
         }),
+      }).catch(e => {
+        // This is optional, so we don't need to show an error if it fails
+        console.warn("Failed to record recipe selection:", e);
       });
     } catch (e) {
       // This is optional, so we don't need to show an error if it fails
