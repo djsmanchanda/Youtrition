@@ -9,15 +9,21 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL") // <-- will point to dev.db
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // 
 }
 
 model Profile {
-  id        Int      @id @default(autoincrement())
-  name      String
-  persona   String? // "Athlete", "Vegetarian", etc.
-  createdAt DateTime @default(now())
+  id                  Int      @id @default(autoincrement())
+  name                String
+  persona             String?
+  // New fields:
+  dietaryRestrictions Json? // array of strings
+  allergies           Json?
+  cuisinePreferences  Json?
+  workoutFrequency    Int?
+  workoutIntensity    Int?
+  createdAt           DateTime @default(now())
 
   pantry  Ingredient[]
   recipes Recipe[]

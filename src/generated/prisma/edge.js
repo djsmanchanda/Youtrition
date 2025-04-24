@@ -83,6 +83,9 @@ Prisma.NullTypes = {
  * Enums
  */
 exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
+  ReadUncommitted: 'ReadUncommitted',
+  ReadCommitted: 'ReadCommitted',
+  RepeatableRead: 'RepeatableRead',
   Serializable: 'Serializable'
 });
 
@@ -131,15 +134,15 @@ exports.Prisma.NullableJsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
+exports.Prisma.QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.QueryMode = {
-  default: 'default',
-  insensitive: 'insensitive'
 };
 
 exports.Prisma.NullsOrder = {
@@ -191,17 +194,17 @@ const config = {
   "datasourceNames": [
     "db"
   ],
-  "activeProvider": "sqlite",
+  "activeProvider": "postgresql",
   "inlineDatasources": {
     "db": {
       "url": {
         "fromEnvVar": "DATABASE_URL",
-        "value": "file:./dev.db"
+        "value": "postgresql://db_owner:npg_zIDWFo8vVCx3@ep-winter-union-a6sh4h2g-pooler.us-west-2.aws.neon.tech/db?sslmode=require"
       }
     }
   },
-  "inlineSchema": "// prisma/schema.prisma\n//\n// Switch to SQLite for a simple embedded DB.\n// The file will appear at prisma/dev.db by default.\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"sqlite\"\n  url      = env(\"DATABASE_URL\") // <-- will point to dev.db\n}\n\nmodel Profile {\n  id                  Int      @id @default(autoincrement())\n  name                String\n  persona             String?\n  // New fields:\n  dietaryRestrictions Json? // array of strings\n  allergies           Json?\n  cuisinePreferences  Json?\n  workoutFrequency    Int?\n  workoutIntensity    Int?\n  createdAt           DateTime @default(now())\n\n  pantry  Ingredient[]\n  recipes Recipe[]\n}\n\nmodel Ingredient {\n  id        Int       @id @default(autoincrement())\n  name      String\n  quantity  Float?\n  unit      String?\n  expiresAt DateTime?\n  // --- relations ---\n  profile   Profile   @relation(fields: [profileId], references: [id])\n  profileId Int\n  recipe    Recipe?   @relation(fields: [recipeId], references: [id])\n  recipeId  Int?\n}\n\nmodel Recipe {\n  id           Int      @id @default(autoincrement())\n  title        String\n  cuisine      String? // \"Mexican\", \"Thai\", …\n  source       String   @default(\"seed\") // \"seed\" | \"gpt\"\n  instructions String\n  cookTime     Int? // minutes\n  dietaryInfo  String?\n  nutrition    Json? // store the dict returned by nutrition API\n  createdAt    DateTime @default(now())\n\n  /// relation back to Profile -------------\n  profile   Profile? @relation(fields: [profileId], references: [id])\n  profileId Int?\n  /// -----------------------------------------\n\n  ingredients Ingredient[]\n}\n",
-  "inlineSchemaHash": "c9a4e5a6fd8e4c401bad1e5167ff3f154837b5f6edf39745f79cbe1e78d1449a",
+  "inlineSchema": "// prisma/schema.prisma\n//\n// Switch to SQLite for a simple embedded DB.\n// The file will appear at prisma/dev.db by default.\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\") // \n}\n\nmodel Profile {\n  id                  Int      @id @default(autoincrement())\n  name                String\n  persona             String?\n  // New fields:\n  dietaryRestrictions Json? // array of strings\n  allergies           Json?\n  cuisinePreferences  Json?\n  workoutFrequency    Int?\n  workoutIntensity    Int?\n  createdAt           DateTime @default(now())\n\n  pantry  Ingredient[]\n  recipes Recipe[]\n}\n\nmodel Ingredient {\n  id        Int       @id @default(autoincrement())\n  name      String\n  quantity  Float?\n  unit      String?\n  expiresAt DateTime?\n  // --- relations ---\n  profile   Profile   @relation(fields: [profileId], references: [id])\n  profileId Int\n  recipe    Recipe?   @relation(fields: [recipeId], references: [id])\n  recipeId  Int?\n}\n\nmodel Recipe {\n  id           Int      @id @default(autoincrement())\n  title        String\n  cuisine      String? // \"Mexican\", \"Thai\", …\n  source       String   @default(\"seed\") // \"seed\" | \"gpt\"\n  instructions String\n  cookTime     Int? // minutes\n  dietaryInfo  String?\n  nutrition    Json? // store the dict returned by nutrition API\n  createdAt    DateTime @default(now())\n\n  /// relation back to Profile -------------\n  profile   Profile? @relation(fields: [profileId], references: [id])\n  profileId Int?\n  /// -----------------------------------------\n\n  ingredients Ingredient[]\n}\n",
+  "inlineSchemaHash": "fc55ae79ade78829c443d89a2482defada3c815c3d43dcfabea27bd10b533e7c",
   "copyEngine": true
 }
 config.dirname = '/'
