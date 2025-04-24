@@ -19,22 +19,11 @@ const nextConfig: NextConfig = {
   experimental: {
     outputFileTracing: true,
     // Root directory for tracing
-    outputFileTracingRoot: path.join(__dirname),
+    outputFileTracingRoot: __dirname,
     // Include the SQLite database in all traced functions
     outputFileTracingIncludes: {
       // "./" ensures dev.db bundles into every server function
       "./": ["dev.db"],
-    },
-  },
-};
-
-  // Ensure dev.db is included in all serverless function bundles
-  experimental: {
-    outputFileTracing: true,
-    outputFileTracingRoot: path.join(__dirname),
-    outputFileTracingIncludes: {
-      // "." key points to the project root
-      ".": ["dev.db"],
     },
   },
 };
