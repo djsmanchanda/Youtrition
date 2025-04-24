@@ -1,7 +1,9 @@
 // src/app/[userId]/page.tsx
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";                    // ← add this
 import { db } from "@/lib/db";
 import { recommendRecipes, Filter } from "@/lib/recipes";
+import { Button } from "@/components/ui/button"; 
 
 export const dynamic = "force-dynamic";
 
@@ -11,21 +13,25 @@ export default async function UserHome({ params }: Props) {
   const id = Number(params.userId);
   if (Number.isNaN(id)) return notFound();
 
-  // 1. Make sure the profile exists
   const profile = await db.profile.findUnique({ where: { id } });
   if (!profile) return redirect(`/${id}/setup`);
 
-  // 2. Fetch recommendations (no filters for now)
   const filter: Filter = { diet: [], allergies: [] };
   const recs = await recommendRecipes(id, filter);
 
-  // 3. Render
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
       <h1 className="text-3xl font-bold">Welcome, {profile.name}!</h1>
       <p className="text-sm text-muted-foreground">
         Persona: {profile.persona ?? "Unspecified"}
       </p>
+
+      {/* I'm hungry button */}
+      <div>
+        <Link href={`/${id}/meal`}>
+          <Button>I'm hungry</Button>
+        </Link>
+      </div>
 
       <section>
         <h2 className="text-xl font-semibold mb-4">Tonight’s Recommendations</h2>
