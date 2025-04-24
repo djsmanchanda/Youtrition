@@ -6,11 +6,14 @@ import { Progress } from "@/components/ui/progress";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: { userId: string } };
+type PageProps = {
+  params: { userId: string };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
 
 const filter: Filter = { diet: ["Vegetarian"], allergies: ["peanut"] };
 
-export default async function Dashboard({ params }: Props) {
+export default async function Dashboard({ params }: PageProps) {
   const userId = Number(params.userId);
   const recs = await recommendRecipes(userId, filter);
 

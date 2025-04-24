@@ -24,9 +24,12 @@ type DbProfileData = {
   createdAt: Date;
 };
 
-type Props = { params: { userId: string } };
+type PageProps = {
+  params: { userId: string };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
 
-export default async function MealPage({ params }: Props) {
+export default async function MealPage({ params }: PageProps) {
   noStore();
   
   const id = Number(params.userId);

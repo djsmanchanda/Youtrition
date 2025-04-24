@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 
 export const dynamic = "force-dynamic";
 
-type Props = { params: { userId: string } };
+type PageProps = {
+  params: { userId: string };
+  searchParams?: Record<string, string | string[] | undefined>;
+};
 
-export default async function UserHome({ params }: Props) {
+export default async function UserHome({ params }: PageProps) {
   const id = Number(params.userId);
   if (Number.isNaN(id)) return notFound();
 
