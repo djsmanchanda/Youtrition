@@ -1,7 +1,10 @@
+// src/app/[userId]/setup/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
+// ← add this
+import { Button } from "@/components/ui/button";
 
 export default function SetupPage() {
   const { userId } = useParams<{ userId: string }>();
@@ -66,60 +69,71 @@ export default function SetupPage() {
 
   return (
     <main className="max-w-md mx-auto p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">Create your profile</h1>
-      {error && <p className="text-red-500">{error}</p>}
+      {/* Header Card */}
+        <h1 className="text-3xl font-semibold">Create your profile</h1>
+        {error && <p className="text-red-500">{error}</p>}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
-        <input
-          className="input w-full"
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
+        <div className="border border-gray-300 rounded p-4">
+          <input
+            className="input w-full"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </div>
 
         {/* Persona */}
-        <select
-          className="select w-full"
-          value={persona}
-          onChange={(e) => setPersona(e.target.value)}
-          required
-        >
-          <option value="" disabled>
-            Select persona
-          </option>
-          <option value="Athlete">Athlete</option>
-          <option value="Vegetarian">Vegetarian</option>
-          <option value="Default">Something else</option>
-        </select>
+        <div className="border border-gray-300 rounded p-4">
+          <select
+            className="select w-full"
+            value={persona}
+            onChange={(e) => setPersona(e.target.value)}
+            required
+          >
+            <option value="" disabled>
+              Select persona
+            </option>
+            <option value="Athlete">Athlete</option>
+            <option value="Vegetarian">Vegetarian</option>
+            <option value="Default">Something else</option>
+          </select>
+        </div>
 
         {/* Dietary restrictions */}
-        <input
-          className="input w-full"
-          placeholder="Dietary restrictions (comma separated)"
-          value={dietaryStr}
-          onChange={(e) => setDietaryStr(e.target.value)}
-        />
+        <div className="border border-gray-300 rounded p-4">
+          <input
+            className="input w-full"
+            placeholder="Dietary restrictions (comma separated)"
+            value={dietaryStr}
+            onChange={(e) => setDietaryStr(e.target.value)}
+          />
+        </div>
 
         {/* Allergies */}
-        <input
-          className="input w-full"
-          placeholder="Allergies (comma separated)"
-          value={allergiesStr}
-          onChange={(e) => setAllergiesStr(e.target.value)}
-        />
+        <div className="border border-gray-300 rounded p-4">
+          <input
+            className="input w-full"
+            placeholder="Allergies (comma separated)"
+            value={allergiesStr}
+            onChange={(e) => setAllergiesStr(e.target.value)}
+          />
+        </div>
 
         {/* Cuisine preferences */}
-        <input
-          className="input w-full"
-          placeholder="Cuisine preferences (comma separated)"
-          value={cuisinesStr}
-          onChange={(e) => setCuisinesStr(e.target.value)}
-        />
+        <div className="border border-gray-300 rounded p-4">
+          <input
+            className="input w-full"
+            placeholder="Cuisine preferences (comma separated)"
+            value={cuisinesStr}
+            onChange={(e) => setCuisinesStr(e.target.value)}
+          />
+        </div>
 
         {/* Workout frequency */}
-        <div>
+        <div className="border border-gray-300 rounded p-4 space-y-2">
           <label className="block text-sm">Workout frequency (1–10)</label>
           <input
             type="range"
@@ -133,7 +147,7 @@ export default function SetupPage() {
         </div>
 
         {/* Workout intensity */}
-        <div>
+        <div className="border border-gray-300 rounded p-4 space-y-2">
           <label className="block text-sm">Workout intensity (1–10)</label>
           <input
             type="range"
@@ -146,9 +160,13 @@ export default function SetupPage() {
           <div className="text-xs text-center">{intensity}</div>
         </div>
 
-        <button type="submit" className="btn w-full">
-          Create profile
-        </button>
+        {/* Submit Button Card */}
+        <Button
+            type="submit"
+            className="w-full bg-black text-white"
+        >
+            Create profile
+      </Button>
       </form>
     </main>
   );
