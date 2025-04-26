@@ -148,6 +148,7 @@ exports.Prisma.RecipeScalarFieldEnum = {
   cookTime: 'cookTime',
   dietaryInfo: 'dietaryInfo',
   nutrition: 'nutrition',
+  favorite: 'favorite',
   createdAt: 'createdAt',
   profileId: 'profileId'
 };

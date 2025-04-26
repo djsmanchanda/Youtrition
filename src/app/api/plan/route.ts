@@ -1,12 +1,11 @@
 // src/app/api/plan/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getGeminiModel } from "@/lib/gemini.server";
-import { db } from "@/lib/db";
-import fs from 'fs';
-import path from 'path';
+import { getGeminiModel } from "@/lib/gemini.server"; // Ensure this path is correct
+import { db } from "@/lib/db"; // Ensure this path is correct
+import { Prisma, Recipe as PrismaRecipe, Ingredient as PrismaIngredient } from '@/generated/prisma'; // Import Prisma
 
-// Define interfaces for our data structures
+// --- Data interfaces (keep as they are or as previously refined) ---
 interface RecipeNutrition {
   calories: number;
   protein: number;
@@ -21,22 +20,29 @@ interface RecipeIngredient {
 }
 
 interface RecipeData {
+  id?: number; // Add optional ID field for database results
   title: string;
   cuisine: string;
-  instructions: string[];
-  cook_time: number;
-  dietary_info: string;
+  instructions: string[] | string; // Allow string for DB format, array for generation
+  cookTime?: number; // Keep consistent name from MealPlanner (camelCase)
+  cook_time?: number; // Keep snake_case for generation schema/parsing
+  dietaryInfo?: string; // Keep consistent name from MealPlanner (camelCase)
+  dietary_info?: string; // Keep snake_case for generation schema/parsing
   ingredients: RecipeIngredient[];
-  nutrition?: RecipeNutrition;
+  nutrition?: RecipeNutrition | string; // Allow string for DB format
+  favorite?: boolean;
 }
 
+
 interface UserProfile {
-  id: string;
+  id: string | number; // Allow number from DB profile
   name: string;
   persona?: string;
-  dietaryRestrictions?: string | string[];
-  allergies?: string | string[];
+  dietaryRestrictions?: string | string[] | Prisma.JsonValue;
+  allergies?: string | string[] | Prisma.JsonValue;
+  cuisinePreferences?: string | string[] | Prisma.JsonValue;
   workoutFrequency?: number;
+  workoutIntensity?: number;
 }
 
 interface MealPlan {
@@ -49,547 +55,561 @@ interface MealPlan {
 
 interface RecipeVariation {
   focus: string;
-  time: string;
+  // Removed time/description to simplify prompt slightly if needed
 }
 
-// Schema for the recipe response from Gemini
+// Type for Prisma Recipe with Ingredients relation
+type RecipeWithIngredients = Prisma.RecipeGetPayload<{
+  include: { ingredients: true };
+}>;
+
+// --- Zod schema for validation (keep as is) ---
 const RecipeSchema = z.object({
   title: z.string(),
   cuisine: z.string(),
   instructions: z.array(z.string()),
   cook_time: z.number(),
   dietary_info: z.string(),
-  ingredients: z.array(z.object({
-    name: z.string(),
-    quantity: z.number().optional(),
-    unit: z.string().optional(),
-  })),
-  nutrition: z.object({
-    calories: z.number(),
-    protein: z.number(),
-    carbs: z.number(),
-    fat: z.number(),
-  }).optional(),
+  ingredients: z.array(
+    z.object({
+      name: z.string(),
+      quantity: z.number().optional(),
+      unit: z.string().optional(),
+    })
+  ),
+  nutrition: z
+    .object({
+      calories: z.number(),
+      protein: z.number(),
+      carbs: z.number(),
+      fat: z.number(),
+    })
+    .optional(),
 });
 
-// Modified route to handle both generation and selection
+
+// --- Main POST Handler ---
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    
-    // Check if this is a recipe generation or selection request
-    if (body.action === 'select') {
-      // Handle recipe selection
-      const { recipeId } = body;
-      // Fetch the selected recipe from the database
-      const recipe = await db.recipe.findUnique({
-        where: { id: recipeId },
-        include: { ingredients: true }
-      });
+
+    // — NEW: Handle favorite action —
+    if (body.action === "favorite") {
+      const { recipeId, favorite } = body;
       
-      if (!recipe) {
-        return NextResponse.json({ 
-          success: false, 
-          error: "Recipe not found" 
-        }, { status: 404 });
-      }
-      
-      // If needed, you could update the recipe here (mark as selected, etc.)
-      
-      return NextResponse.json({ 
-        success: true, 
-        result: recipe
-      });
-    } else {
-      // Handle recipe generation
-      const { profile, plan } = body as { profile: UserProfile, plan: MealPlan };
-      console.log("Received request:", { profile: { id: profile.id, name: profile.name }, plan });
-      
-      // Check if Google API key is configured
-      if (!process.env.GOOGLE_API_KEY) {
-        console.warn("Google API key is missing");
-        return generateMockRecipes(profile, plan);
-      }
-      
-      try {
-        // Generate multiple recipes
-        const recipes = await generateRecipes(profile, plan);
-        
-        // Save recipes to database
-        const savedRecipes = await Promise.all(
-          recipes.map(recipe => createRecipeInDb(recipe, profile.id))
+      if (!recipeId) {
+        return NextResponse.json(
+          { success: false, error: "Missing recipeId" },
+          { status: 400 }
         );
-        
-        return NextResponse.json({ 
-          success: true, 
-          results: savedRecipes
+      }
+
+      const recipeIdNum = parseInt(recipeId, 10);
+      if (isNaN(recipeIdNum)) {
+        return NextResponse.json(
+          { success: false, error: "Invalid recipeId" },
+          { status: 400 }
+        );
+      }
+
+      try {
+        // Update the recipe's favorite status
+        const updatedRecipe = await db.recipe.update({
+          where: {
+            id: recipeIdNum,
+          },
+          data: {
+            favorite: favorite,
+          },
         });
+
+        return NextResponse.json(updatedRecipe);
       } catch (error) {
-        console.error("Recipe generation failed:", error);
-        // Fall back to mock data if generation fails
-        return generateMockRecipes(profile, plan);
+        console.error("Error updating recipe favorite status:", error);
+        return NextResponse.json(
+          { success: false, error: "Failed to update recipe favorite status" },
+          { status: 500 }
+        );
       }
     }
-  } catch (error: unknown) {
-    console.error("API error:", error);
-    
-    const errorMessage = error instanceof Error ? error.message : "Failed to process request";
-    const errorName = error instanceof Error ? error.name : "Unknown";
-    const errorStack = error instanceof Error && process.env.NODE_ENV === 'development' 
-      ? error.stack 
-      : undefined;
-    
+
+    // — Ingredient substitution branch —
+    if (body.action === "substitute") {
+        const {
+             selectedRecipe,
+             substitutions,
+             profile,
+             plan,
+        }: {
+            selectedRecipe: RecipeData;
+            substitutions: { ingredient: RecipeIngredient; note: string }[];
+            profile: UserProfile;
+            plan: MealPlan;
+        } = body;
+
+        const substitutionGenerationConfig = {
+            temperature: 0.35,
+            topP: 0.8,
+            topK: 40,
+            maxOutputTokens: 2048,
+            responseMimeType: "application/json",
+        };
+
+        const originalInstructionsString = typeof selectedRecipe.instructions === 'string'
+            ? selectedRecipe.instructions
+            : Array.isArray(selectedRecipe.instructions) 
+              ? selectedRecipe.instructions.join('\n') 
+              : "";
+
+        const prompt = createSubstitutionPrompt(
+            { ...selectedRecipe, instructions: originalInstructionsString },
+            substitutions,
+            profile,
+            plan
+        );
+
+        const model = getGeminiModel("gemini-2.0-flash-lite-001");
+        const result = await model.generateContent({
+            contents: [{ role: "user", parts: [{ text: prompt }] }],
+            generationConfig: substitutionGenerationConfig,
+        });
+
+        const responseText = await result.response.text();
+
+        let aiRecipeResult: any;
+        try {
+            aiRecipeResult = JSON.parse(responseText);
+        } catch (e) {
+            console.error("Failed to parse substitution response:", e, responseText);
+            throw new Error("Failed to get valid recipe update from AI.");
+        }
+
+        // Validate AI response structure
+        const validatedAiRecipe = RecipeSchema.parse(aiRecipeResult);
+
+        // Construct the RecipeData to send back to client
+        const recipeForClient: RecipeData = {
+             id: selectedRecipe.id,
+             title: validatedAiRecipe.title,
+             cuisine: validatedAiRecipe.cuisine,
+             instructions: validatedAiRecipe.instructions.join('\n'),
+             cookTime: validatedAiRecipe.cook_time,
+             dietaryInfo: validatedAiRecipe.dietary_info,
+             ingredients: validatedAiRecipe.ingredients,
+             nutrition: validatedAiRecipe.nutrition,
+             favorite: selectedRecipe.favorite
+        };
+      
+        return NextResponse.json({ 
+            success: true, 
+            result: recipeForClient,
+            substitutionInfo: substitutions
+                .map((s) => `Substituted ${s.ingredient.name}`)
+                .join(", "),
+        });
+    }
+
+    // — Recipe selection branch —
+    if (body.action === "select") {
+        const recipeIdNum = parseInt(body.recipeId, 10);
+        if (isNaN(recipeIdNum)) {
+          return NextResponse.json(
+            { success: false, error: "Invalid recipeId" },
+            { status: 400 }
+          );
+        }
+        const recipe = await db.recipe.findUnique({
+          where: { id: recipeIdNum },
+          include: { ingredients: true },
+        });
+        if (!recipe) {
+          return NextResponse.json(
+            { success: false, error: "Recipe not found" },
+            { status: 404 }
+          );
+        }
+        
+        // Map DB fields to RecipeData structure
+        const resultRecipe: RecipeData = {
+          id: recipe.id,
+          title: recipe.title,
+          cuisine: recipe.cuisine || "",
+          instructions: recipe.instructions || "",
+          cookTime: recipe.cookTime || undefined,
+          dietaryInfo: recipe.dietaryInfo || undefined,
+          ingredients: recipe.ingredients.map(ing => ({
+            name: ing.name,
+            quantity: ing.quantity || undefined,
+            unit: ing.unit || undefined
+          })),
+          nutrition: recipe.nutrition 
+            ? JSON.parse(JSON.stringify(recipe.nutrition)) 
+            : undefined,
+          favorite: recipe.favorite
+        };
+        
+        return NextResponse.json({ success: true, result: resultRecipe });
+    }
+
+    // — New recipe generation branch —
+    const { profile, plan }: { profile: UserProfile; plan: MealPlan } = body;
+
+    if (!process.env.GOOGLE_API_KEY) {
+      console.warn("GOOGLE_API_KEY missing, generating mock recipes.");
+      return generateMockRecipes(profile, plan);
+    }
+
+    // --- Generate Recipes ---
+    const recipes = await generateRecipes(profile, plan);
+        
+    // --- Save Recipes to DB ---
+    const saved = await Promise.all(
+      recipes.map((r) => createRecipeInDb(r, profile.id))
+    );
+
+    // Map DB results back to RecipeData structure for consistency
+    const resultsForClient: RecipeData[] = saved.map(dbRecipe => ({
+        id: dbRecipe.id,
+        title: dbRecipe.title,
+        cuisine: dbRecipe.cuisine || "",
+        instructions: dbRecipe.instructions || "",
+        cookTime: dbRecipe.cookTime || undefined,
+        dietaryInfo: dbRecipe.dietaryInfo || undefined,
+        ingredients: dbRecipe.ingredients.map(ing => ({
+            name: ing.name,
+            quantity: ing.quantity || undefined,
+            unit: ing.unit || undefined
+        })),
+        nutrition: dbRecipe.nutrition 
+            ? JSON.parse(JSON.stringify(dbRecipe.nutrition)) 
+            : undefined,
+        favorite: dbRecipe.favorite
+    }));
+
+    return NextResponse.json({ success: true, results: resultsForClient });
+
+  } catch (err: any) {
+    console.error("API error in /api/plan:", err);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: errorMessage,
-        errorType: errorName,
-        stack: errorStack
+      {
+        success: false,
+        error: err.message || "Unknown error occurred during recipe planning.",
+        // Stack trace only in development
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
       },
       { status: 500 }
     );
   }
 }
 
-// Generate three recipes using Gemini
-async function generateRecipes(profile: UserProfile, plan: MealPlan): Promise<RecipeData[]> {
-  const recipes: RecipeData[] = [];
-  const uniqueVariations: RecipeVariation[] = [
-    { focus: "Quick & Easy", time: "under 30 minutes" },
-    { focus: "Nutritionally Balanced", time: "standard preparation" },
-    { focus: "Gourmet", time: "more elaborate" }
-  ];
-  
-  for (let i = 0; i < 3; i++) {
-    const variation = uniqueVariations[i];
-    const recipe = await generateSingleRecipe(profile, plan, variation);
-    recipes.push(recipe);
-  }
-  
-  return recipes;
+// — Helper: build the substitution prompt —
+function createSubstitutionPrompt(
+  selectedRecipe: RecipeData,
+  substitutions: { ingredient: RecipeIngredient; note: string }[],
+  profile: UserProfile,
+  plan: MealPlan
+): string {
+  const dr = Array.isArray(profile.dietaryRestrictions)
+    ? profile.dietaryRestrictions.join(", ")
+    : profile.dietaryRestrictions || "None";
+  const al = Array.isArray(profile.allergies)
+    ? profile.allergies.join(", ")
+    : profile.allergies || "None";
+
+  const instructionsString = typeof selectedRecipe.instructions === 'string'
+      ? selectedRecipe.instructions
+      : Array.isArray(selectedRecipe.instructions) 
+        ? selectedRecipe.instructions.join('\n') 
+        : "";
+
+  return `
+You are updating an existing recipe based on substitutions.
+Keep the original style and adjust instructions/nutrition minimally but accurately.
+
+USER PROFILE:
+- Diet: ${dr}
+- Allergies: ${al}
+- Meal: ${plan.mealType}, Cuisine: ${plan.cuisine}, Calories: ~${plan.calories}, Macro: ${plan.macroType}
+
+ORIGINAL RECIPE:
+- Title: ${selectedRecipe.title}
+- Ingredients: ${selectedRecipe.ingredients.map((ing) => ing.name).join(", ")}
+- Instructions: ${instructionsString}
+
+SUBSTITUTIONS:
+${substitutions
+  .map((s) => `- Replace: ${s.ingredient.name} (Note: ${s.note || "none"})`)
+  .join("\n")}
+
+REQUIREMENTS:
+- Modify only based on requested substitutions.
+- Maintain calorie & nutrition targets as close as possible.
+- Respond ONLY with valid JSON matching the required format.
+
+RESPONSE FORMAT:
+{
+  "title": "...",
+  "cuisine": "${selectedRecipe.cuisine}",
+  "instructions": ["...", "..."],
+  "cook_time": number,
+  "dietary_info": "...",
+  "ingredients": [{ "name":"...", "quantity":number?, "unit":"string?" }, ...],
+  "nutrition": { "calories":number, "protein":number, "carbs":number, "fat":number }
 }
 
-// Generate a single recipe with a specific variation
+Update the recipe JSON now.
+`;
+}
+
+// — Generate three recipe variations —
+async function generateRecipes(
+  profile: UserProfile,
+  plan: MealPlan
+): Promise<RecipeData[]> {
+  const variations: RecipeVariation[] = [
+    { focus: "Quick & Easy" },
+    { focus: "Standard Balanced" },
+    { focus: "Flavor Focused" },
+  ];
+  const generationPromises: Promise<RecipeData>[] = [];
+  for (const variation of variations) {
+    generationPromises.push(generateSingleRecipe(profile, plan, variation));
+  }
+  const results = await Promise.all(generationPromises);
+  return results;
+}
+
 async function generateSingleRecipe(
   profile: UserProfile, 
   plan: MealPlan, 
   variation: RecipeVariation
 ): Promise<RecipeData> {
-  // Create the prompt with the variation
-  const promptText = createPrompt(profile, plan, variation);
-  console.log(`Generated prompt for Gemini (${variation.focus})`);
-  
-  // Enhanced prompt with more explicit JSON formatting instructions
-  const enhancedPrompt = `${promptText}
-  
-IMPORTANT FORMATTING INSTRUCTIONS:
-1. Respond ONLY with valid JSON.
-2. Do not include any text, explanations, or markdown outside the JSON.
-3. Make sure all property names and string values use DOUBLE QUOTES, not single quotes.
-4. Do not include any trailing commas in objects or arrays.
-5. All numbers should be numeric values without quotes.
-6. Do not include undefined, NaN, or Infinity values.
-7. Format the JSON as a single compact object without line breaks or extra whitespace.`;
-  
-  // Initialize the Gemini model
+  const prompt = createPrompt(profile, plan, variation);
+
   const model = getGeminiModel("gemini-2.0-flash-lite-001");
   
-  // Set Gemini generation parameters for better structured output
   const generationConfig = {
-    temperature: 0.3, // Lower temperature for more predictable outputs
-    topP: 0.8,
-    topK: 40,
-    maxOutputTokens: 2048,
+      temperature: 0.4,
+      topP: 0.85,
+      topK: 45,
+      maxOutputTokens: 2048,
+      responseMimeType: "application/json",
   };
-  
-  // Call Gemini model with the enhanced prompt and generation config
-  console.log(`Calling Gemini API for ${variation.focus} recipe...`);
-  const result = await model.generateContent({
-    contents: [{ role: "user", parts: [{ text: enhancedPrompt }] }],
-    generationConfig,
-  });
-  
-  const response = await result.response;
-  const text = response.text();
-  console.log(`Gemini API response received for ${variation.focus} recipe`);
-  
-  // Save the API response to a file in the public folder
-  try {
-    // Create a timestamp in the format HHMMDDMMYYYY
-    const now = new Date();
-    const timestamp = `${now.getHours().toString().padStart(2, '0')}${
-      now.getMinutes().toString().padStart(2, '0')}${
-      now.getDate().toString().padStart(2, '0')}${
-      (now.getMonth() + 1).toString().padStart(2, '0')}${
-      now.getFullYear()}`;
-    
-    // Create the filename
-    const filename = `Gemini_${variation.focus.replace(/\s+/g, '')}_${timestamp}.txt`;
-    
-    // Ensure the public directory exists
-    const publicDir = path.join(process.cwd(), 'public');
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true });
-    }
-    
-    // Create the full file path
-    const filePath = path.join(publicDir, filename);
-    
-    // Prepare the content to save
-    const fileContent = `
-=== GEMINI API CALL ===
-Timestamp: ${now.toISOString()}
-Model: gemini-2.0-flash-lite-001
-Variation: ${variation.focus} (${variation.time})
-Profile: ${profile.name} (ID: ${profile.id})
-Plan: ${plan.mealType} - ${plan.cuisine} - ${plan.calories}kcal - ${plan.macroType}
 
-=== PROMPT ===
-${enhancedPrompt}
+  let attempt = 0;
+  const maxAttempts = 2;
 
-=== RAW RESPONSE ===
-${text}
-`;
-    
-    // Write the file
-    fs.writeFileSync(filePath, fileContent, 'utf8');
-    console.log(`Gemini API response saved to: ${filePath}`);
-  } catch (fileError) {
-    console.error("Error saving Gemini response to file:", fileError);
-    // Continue execution even if file saving fails
-  }
-  
-  // Parse and validate the response with error handling
-  let content: RecipeData;
-  try {
-    // Print the raw text for debugging
-    console.log("Raw Gemini response:", text.substring(0, 150) + "..." + 
-               (text.length > 300 ? text.substring(text.length - 150) : ""));
-    
-    // Clean up the response text to handle common JSON formatting issues
-    let cleanedText = text;
-    
-    // Remove any markdown code block markers
-    cleanedText = cleanedText.replace(/```json/g, "").replace(/```/g, "");
-    
-    // Remove any non-JSON text before the first { and after the last }
-    const startBrace = cleanedText.indexOf('{');
-    const endBrace = cleanedText.lastIndexOf('}');
-    
-    if (startBrace >= 0 && endBrace >= 0 && endBrace > startBrace) {
-      cleanedText = cleanedText.substring(startBrace, endBrace + 1);
-    } else {
-      throw new Error("Cannot find valid JSON object markers in response");
-    }
-    
-    // Handle potential trailing commas in objects and arrays (common JSON error)
-    cleanedText = cleanedText
-      .replace(/,\s*}/g, '}')
-      .replace(/,\s*]/g, ']');
-    
-    // Fix potential problems with JSON and double quotes
-    cleanedText = cleanedText
-      .replace(/(\w+)(?=:)/g, '"$1"')  // Add quotes around keys without quotes
-      .replace(/:\s*'([^']*)'/g, ': "$1"');  // Convert single quotes to double quotes
-    
-    console.log("Cleaned JSON:", cleanedText.substring(0, 100) + "...");
-    
-    // Now try to parse the cleaned JSON
-    content = JSON.parse(cleanedText) as RecipeData;
-    console.log("Parsed Gemini response successfully");
-  } catch (parseError: unknown) {
-    console.error("JSON parse error:", parseError);
-    if (parseError instanceof Error) {
-      console.error("Error position:", parseError.message);
-      
-      // More details for debugging
-      if (parseError.message.includes("position")) {
-        const posMatch = parseError.message.match(/position (\d+)/);
-        if (posMatch && posMatch[1]) {
-          const pos = parseInt(posMatch[1]);
-          const errorContext = text.substring(Math.max(0, pos - 30), Math.min(text.length, pos + 30));
-          console.error(`Context around error: "${errorContext}"`);
-        }
+  while (attempt < maxAttempts) {
+      attempt++;
+      try {
+          const result = await model.generateContent({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              generationConfig: generationConfig,
+          });
+
+          const responseText = await result.response.text();
+          const cleanedText = responseText.replace(/```json\n?|\n?```/g, "").trim();
+
+          const jsonResult = JSON.parse(cleanedText);
+          RecipeSchema.parse(jsonResult);
+
+          const recipeData: RecipeData = {
+            ...jsonResult,
+            cookTime: jsonResult.cook_time,
+            dietaryInfo: jsonResult.dietary_info,
+          };
+          delete (recipeData as any).cook_time;
+          delete (recipeData as any).dietary_info;
+
+          return recipeData;
+
+      } catch (error: any) {
+          console.error(`Error generating/parsing recipe for "${variation.focus}", Attempt ${attempt}:`, error.message);
+          if (attempt >= maxAttempts) {
+              console.error(`Failed to generate valid recipe for "${variation.focus}" after ${maxAttempts} attempts. Falling back to mock.`);
+              return createVariationMock(plan, variation);
+          }
       }
-    }
-    
-    // Use a variation-specific mock instead of failing
-    content = createVariationMock(plan, variation);
   }
-  
-  // Validate against schema with better error handling
-  let parsed: RecipeData;
-  try {
-    parsed = RecipeSchema.parse(content);
-    console.log("Zod validation passed");
-  } catch (zodError) {
-    console.error("Schema validation error:", zodError);
-    
-    // Create a fixed version with the variation
-    parsed = createVariationMock(plan, variation);
-  }
-  
-  return parsed;
+  return createVariationMock(plan, variation);
 }
 
-// Updated function to create prompt with variations
+// — Helper: Create Prompt —
 function createPrompt(
   profile: UserProfile, 
   plan: MealPlan, 
   variation: RecipeVariation
 ): string {
-  // Create structured user profile data
-  let dietaryRestrictions = "";
-  if (profile.dietaryRestrictions) {
-    // Handle SQLite JSON storage (stored as string)
-    const restrictions = typeof profile.dietaryRestrictions === 'string' 
-      ? JSON.parse(profile.dietaryRestrictions) 
-      : profile.dietaryRestrictions;
-      
-    if (Array.isArray(restrictions) && restrictions.length > 0) {
-      dietaryRestrictions = `Dietary Restrictions: ${restrictions.join(", ")}`;
-    }
-  }
-  
-  let allergies = "";
-  if (profile.allergies) {
-    // Handle SQLite JSON storage (stored as string)
-    const allergyList = typeof profile.allergies === 'string'
-      ? JSON.parse(profile.allergies)
-      : profile.allergies;
-      
-    if (Array.isArray(allergyList) && allergyList.length > 0) {
-      allergies = `Allergies: ${allergyList.join(", ")}`;
-    }
-  }
-  
-  let workoutDetails = "";
-  if (profile.persona === "Athlete") {
-    workoutDetails = `
-      Workout Frequency: ${profile.workoutFrequency || "N/A"} times per week
-      Today's Workout Intensity: ${plan.todayWorkout ?? "N/A"}/10
-    `;
-  }
-  
-  // Add the variation-specific request
-  const variationRequest = `
-RECIPE VARIATION:
-- Style: ${variation.focus}
-- Preparation Time: ${variation.time}
-- Make this recipe ${variation.focus.toLowerCase()} while maintaining the core requirements.
-`;
-  
-  // Create the basic request
-  const basicRequest = `
-Create a ${plan.mealType} recipe that matches these requirements:
+  const dr = Array.isArray(profile.dietaryRestrictions)
+    ? profile.dietaryRestrictions.join(", ")
+    : profile.dietaryRestrictions || "None";
+  const al = Array.isArray(profile.allergies)
+    ? profile.allergies.join(", ")
+    : profile.allergies || "None";
+
+  const varietyInstruction = `Generate a suitable ${plan.mealType} recipe. Try to provide some variety compared to very basic options.`;
+
+  return `
+You are creating a recipe suggestion based on user needs.
 
 USER PROFILE:
-- Name: ${profile.name}
+- Diet: ${dr}, Allergies: ${al}
 - Persona: ${profile.persona || "Regular"}
-- ${dietaryRestrictions}
-- ${allergies}
-${workoutDetails}
 
-RECIPE REQUIREMENTS:
-- Cuisine: ${plan.cuisine}
-- Meal Type: ${plan.mealType}
-- Target Calories: ${plan.calories} kcal
-- Macro Focus: ${plan.macroType}
-${variationRequest}
+RECIPE REQUEST:
+- Meal: ${plan.mealType}
+- Cuisine: ${plan.cuisine} (Strict)
+- Calories: ~${plan.calories} kcal
+- Macro: ${plan.macroType}
+- Focus: "${variation.focus}" ${variation.focus === 'Quick & Easy' ? '(simple, fast)' : variation.focus === 'Flavor Focused' ? '(emphasize taste)' : '(standard approach)'}
 
-${plan.mealType === "Pre-Workout" ? "This is a pre-workout meal, so optimize for quick energy and proper digestion before exercise." : ""}
-  `;
+${varietyInstruction}
 
-  // Create the JSON instructions part
-  const jsonInstructions = `
-RESPONSE FORMAT:
-You must respond ONLY with a single valid JSON object exactly as shown below:
-
+OUTPUT REQUIREMENTS:
+- Respond ONLY with valid JSON object matching the schema. No extra text.
+- Schema:
 {
-  "title": "Recipe Title",
+  "title": "string (Recipe title)",
   "cuisine": "${plan.cuisine}",
-  "instructions": [
-    "Step 1 instruction",
-    "Step 2 instruction",
-    "Step 3 instruction"
-  ],
-  "cook_time": 30,
-  "dietary_info": "Brief dietary information",
-  "ingredients": [
-    {
-      "name": "Ingredient 1",
-      "quantity": 100,
-      "unit": "g"
-    },
-    {
-      "name": "Ingredient 2",
-      "quantity": 1,
-      "unit": "cup"
-    }
-  ],
-  "nutrition": {
-    "calories": ${plan.calories},
-    "protein": 30,
-    "carbs": 40,
-    "fat": 15
-  }
+  "instructions": ["string", ...],
+  "cook_time": number (minutes),
+  "dietary_info": "string",
+  "ingredients": [{ "name": "string", "quantity": number?, "unit": "string?" }, ...],
+  "nutrition": { "calories": number, "protein": number, "carbs": number, "fat": number }
 }
 
-IMPORTANT:
-1. Use ONLY double quotes for strings, not single quotes
-2. Do not include any text outside the JSON object
-3. Make sure all numbers are without quotes
-4. Do not include any trailing commas in arrays or objects
-5. The JSON must be valid and properly formatted
+Generate the JSON now.
 `;
-
-  return basicRequest + jsonInstructions;
 }
 
-// Create mock data with variation
-function createVariationMock(plan: MealPlan, variation: RecipeVariation): RecipeData {
-  let title: string;
-  let cookTime: number;
-  let instructions: string[];
-  let ingredients: RecipeIngredient[];
-  
-  // Customize based on variation
-  if (variation.focus === "Quick & Easy") {
-    title = `Quick ${plan.cuisine} ${plan.mealType}`;
-    cookTime = 20;
-    instructions = [
-      "Prepare all ingredients by chopping into small pieces for quick cooking.",
-      "Heat pan over medium-high heat to reduce cooking time.",
-      "Cook ingredients in order of longest cooking time first.",
-      "Combine and serve immediately."
-    ];
-    ingredients = [
-      { name: "Pre-cut protein", quantity: 100, unit: "g" },
-      { name: "Quick-cooking grain", quantity: 100, unit: "g" },
-      { name: "Pre-washed vegetables", quantity: 150, unit: "g" },
-      { name: "Sauce/seasoning", quantity: 30, unit: "ml" }
-    ];
-  } else if (variation.focus === "Nutritionally Balanced") {
-    title = `Balanced ${plan.cuisine} ${plan.mealType}`;
-    cookTime = 35;
-    instructions = [
-      "Prepare ingredients with focus on preserving nutrients.",
-      "Cook protein to appropriate internal temperature.",
-      "Steam vegetables to maintain nutritional value.",
-      "Combine all components in balanced portions."
-    ];
-    ingredients = [
-      { name: "Lean protein", quantity: 120, unit: "g" },
-      { name: "Complex carbohydrates", quantity: 100, unit: "g" },
-      { name: "Mixed vegetables", quantity: 200, unit: "g" },
-      { name: "Healthy fats", quantity: 15, unit: "g" },
-      { name: "Herbs and spices", quantity: 5, unit: "g" }
-    ];
-  } else {
-    title = `Gourmet ${plan.cuisine} ${plan.mealType}`;
-    cookTime = 50;
-    instructions = [
-      "Prepare mise en place with all ingredients properly measured and prepared.",
-      "Focus on layering flavors throughout the cooking process.",
-      "Use proper cooking techniques to enhance texture and taste.",
-      "Plate with attention to presentation and garnish appropriately."
-    ];
-    ingredients = [
-      { name: "Premium protein", quantity: 150, unit: "g" },
-      { name: "Specialty grain/starch", quantity: 100, unit: "g" },
-      { name: "Seasonal vegetables", quantity: 150, unit: "g" },
-      { name: "Gourmet sauce components", quantity: 50, unit: "ml" },
-      { name: "Garnishes", quantity: 10, unit: "g" }
-    ];
+// — Mock Recipe Generation —
+function createVariationMock(
+  plan: MealPlan,
+  variation: RecipeVariation
+): RecipeData {
+  const baseCalories = plan.calories;
+  let protein = 25, carbs = 55, fat = 15;
+
+  if (plan.macroType === "Protein-Intensive") {
+      protein = Math.max(30, Math.round(baseCalories * 0.3 / 4));
+      carbs = Math.max(30, Math.round(baseCalories * 0.4 / 4));
+      fat = Math.max(10, Math.round(baseCalories * 0.3 / 9));
+  } else if (plan.macroType === "Carb-Intensive") {
+      protein = Math.max(15, Math.round(baseCalories * 0.15 / 4));
+      carbs = Math.max(50, Math.round(baseCalories * 0.55 / 4));
+      fat = Math.max(10, Math.round(baseCalories * 0.3 / 9));
   }
-  
+  const adjustedCalories = variation.focus === "Flavor Focused" ? baseCalories + 20 : variation.focus === "Quick & Easy" ? baseCalories - 20 : baseCalories;
+
   return {
-    title,
+    title: `Mock ${variation.focus} ${plan.cuisine} ${plan.mealType}`,
     cuisine: plan.cuisine,
-    instructions,
-    cook_time: cookTime,
-    dietary_info: `${plan.macroType} meal designed for ${variation.focus.toLowerCase()} preparation`,
-    ingredients,
+    instructions: ["Mock Step 1.", "Mock Step 2.", "Mock Step 3."],
+    cookTime:
+      variation.focus === "Quick & Easy"
+        ? 20
+        : variation.focus === "Flavor Focused"
+        ? 45
+        : 35,
+    dietaryInfo: `Mock ${plan.macroType}`,
+    ingredients: [
+      { name: `Mock ${plan.cuisine} Ingredient A`, quantity: 1, unit: "unit" },
+      { name: "Mock Ingredient B", quantity: 100, unit: "g" },
+    ],
     nutrition: {
-      calories: plan.calories,
-      protein: plan.macroType === "Protein-Intensive" ? 35 : 20,
-      carbs: plan.macroType === "Carb-Intensive" ? 70 : 50,
-      fat: 15
-    }
+      calories: Math.max(200, adjustedCalories),
+      protein: protein,
+      carbs: carbs,
+      fat: fat,
+    },
+    favorite: false
   };
 }
 
-// Generate mock recipes for testing or when API key is missing
-async function generateMockRecipes(profile: UserProfile, plan: MealPlan) {
-  const variations: RecipeVariation[] = [
-    { focus: "Quick & Easy", time: "under 30 minutes" },
-    { focus: "Nutritionally Balanced", time: "standard preparation" },
-    { focus: "Gourmet", time: "more elaborate" }
-  ];
-  
-  // Create three different mock recipes
-  const mockRecipes = variations.map(variation => createVariationMock(plan, variation));
-  
-  // Save mock recipes to database
-  const savedRecipes = await Promise.all(
-    mockRecipes.map(recipe => createRecipeInDb(recipe, profile.id, "mock"))
-  );
-  
+async function generateMockRecipes(
+  profile: UserProfile,
+  plan: MealPlan
+): Promise<NextResponse> {
+    const variations: RecipeVariation[] = [
+        { focus: "Quick & Easy" },
+        { focus: "Standard Balanced" },
+        { focus: "Flavor Focused" },
+    ];
+
+  const mocks = variations.map(variation => createVariationMock(plan, variation));
+
+  const resultsForClient = mocks.map((mock, index) => ({
+      ...mock,
+      id: Date.now() + index,
+      instructions: typeof mock.instructions === 'string' 
+        ? mock.instructions 
+        : Array.isArray(mock.instructions) 
+          ? mock.instructions.join('\n') 
+          : "",
+  }));
+
   return NextResponse.json({
-    success: true,
-    results: savedRecipes,
-    note: "Using mock data (GOOGLE_API_KEY not configured or generation failed)"
+      success: true,
+      results: resultsForClient,
+      note: "Using mock data - GOOGLE_API_KEY not set."
   });
 }
 
-// Save recipe to database
-// Save recipe to database
+// — Helper: Create Recipe in DB —
 async function createRecipeInDb(
-  recipeData: RecipeData, 
-  profileId: string, 
+  recipeData: RecipeData,
+  profileId: string | number,
   source: string = "gemini"
-) {
-  // Convert string profileId to number (assuming your Prisma schema uses numeric IDs)
-  const numericProfileId = parseInt(profileId, 10);
-  
-  // Ensure the nutrition object is properly formatted for Prisma JSON field
-  const nutritionData = recipeData.nutrition 
-    ? { 
-        calories: recipeData.nutrition.calories,
-        protein: recipeData.nutrition.protein,
-        carbs: recipeData.nutrition.carbs,
-        fat: recipeData.nutrition.fat
-      }
-    : undefined; // Use undefined instead of null for Prisma
+): Promise<RecipeWithIngredients> {
+  const numericProfileId = typeof profileId === 'string' ? parseInt(profileId, 10) : profileId;
+  if (isNaN(numericProfileId)) {
+    throw new Error(`Invalid profileId: ${profileId}`);
+  }
 
-  return await db.recipe.create({
+  // Convert instructions to string before saving
+  const instructionsString = Array.isArray(recipeData.instructions)
+      ? recipeData.instructions.join("\n")
+      : recipeData.instructions || "";
+
+  // Handle nutrition JSON appropriately
+  let nutritionJson: Prisma.InputJsonValue | undefined = undefined;
+  if (recipeData.nutrition) {
+    if (typeof recipeData.nutrition === 'string') {
+      try {
+          const parsed = JSON.parse(recipeData.nutrition);
+          if (typeof parsed === 'object' && parsed !== null) { 
+            nutritionJson = parsed; 
+          }
+      } catch { /* Use undefined */ }
+    } else if (typeof recipeData.nutrition === 'object') {
+       nutritionJson = recipeData.nutrition as unknown as Prisma.InputJsonValue;
+    }
+  }
+
+  return db.recipe.create({
     data: {
       title: recipeData.title,
       cuisine: recipeData.cuisine,
-      source: source,
-      instructions: Array.isArray(recipeData.instructions) 
-        ? recipeData.instructions.join("\n") 
-        : recipeData.instructions,
-      cookTime: recipeData.cook_time,
-      dietaryInfo: recipeData.dietary_info,
-      nutrition: nutritionData, // Use the properly formatted nutrition data
-      profileId: numericProfileId, // Use the numeric profile ID
+      source,
+      instructions: instructionsString,
+      cookTime: recipeData.cookTime ?? undefined,
+      dietaryInfo: recipeData.dietaryInfo ?? undefined,
+      nutrition: nutritionJson,
+      favorite: false,
+      profile: {
+          connect: { id: numericProfileId }
+      },
       ingredients: {
-        create: recipeData.ingredients.map((ing: RecipeIngredient) => ({
+        create: recipeData.ingredients.map((ing) => ({
           name: ing.name,
-          quantity: ing.quantity || null,
-          unit: ing.unit || null,
-          // Connect to the profile using the proper Prisma relation syntax
+          quantity: ing.quantity ?? undefined,
+          unit: ing.unit ?? undefined,
           profile: {
-            connect: {
-              id: numericProfileId
-            }
+              connect: { id: numericProfileId }
           }
         })),
       },
     },
-    include: { 
-      ingredients: true 
-    },
+    include: { ingredients: true },
   });
 }

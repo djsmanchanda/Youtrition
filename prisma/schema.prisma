@@ -52,6 +52,7 @@ model Recipe {
   cookTime     Int? // minutes
   dietaryInfo  String?
   nutrition    Json? // store the dict returned by nutrition API
+  favorite     Boolean  @default(false)
   createdAt    DateTime @default(now())
 
   /// relation back to Profile -------------
