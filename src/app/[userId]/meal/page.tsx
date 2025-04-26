@@ -1,70 +1,72 @@
-
-// 1. First, let's fix the MealPage component:
-
 // src/app/[userId]/meal/page.tsx
+
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import MealClient from "./MealClient";
 import { Suspense } from "react";
-import { unstable_noStore as noStore } from 'next/cache';
-
-// Import the ProfileData type from MealClient to ensure type compatibility
+import { unstable_noStore as noStore } from "next/cache";
 import { ProfileData as MealClientProfileData } from "@/components/MealPlanner";
 
-// Local type for database profile data
-type DbProfileData = {
-  id: number;
-  name: string;
-  persona: string | null;
-  dietaryRestrictions: any;
-  allergies: any;
-  cuisinePreferences: any;
-  workoutFrequency: number | null;
-  workoutIntensity: number | null;
-  createdAt: Date;
-};
-
 type PageProps = {
-  params: { userId: string };
-  searchParams?: Record<string, string | string[] | undefined>;
+  params: {
+    userId: string;
+  };
 };
 
 export default async function MealPage({ params }: PageProps) {
   noStore();
-  
+  console.log("[MealPage] Received params:", params);
+
   const id = Number(params.userId);
-  if (isNaN(id)) return notFound();
 
-  const profile = await db.profile.findUnique({ where: { id } });
-  if (!profile) return notFound();
+  if (isNaN(id)) {
+    console.error("[MealPage] Invalid userId param, not a number:", params.userId);
+    return notFound();
+  }
 
-  // Transform and parse JSON fields properly
+  console.log("[MealPage] Attempting to fetch profile for ID:", id);
+
+  const profile = await db.profile.findUnique({
+    where: { id: id },
+  });
+
+  if (!profile) {
+    console.log("[MealPage] Profile not found for ID:", id);
+    return notFound();
+  }
+
+  console.log("[MealPage] Profile found:", profile.name);
+
   const profileData: MealClientProfileData = {
     id: profile.id,
     name: profile.name,
     persona: profile.persona || "Regular",
-    // Parse JSON fields or provide empty arrays
-    dietaryRestrictions: profile.dietaryRestrictions ? 
-      (typeof profile.dietaryRestrictions === 'string' 
-        ? JSON.parse(profile.dietaryRestrictions) 
-        : profile.dietaryRestrictions) || [] : [],
-    allergies: profile.allergies ? 
-      (typeof profile.allergies === 'string' 
-        ? JSON.parse(profile.allergies) 
-        : profile.allergies) || [] : [],
-    cuisinePreferences: profile.cuisinePreferences ? 
-      (typeof profile.cuisinePreferences === 'string' 
-        ? JSON.parse(profile.cuisinePreferences) 
-        : profile.cuisinePreferences) || [] : [],
-    // Convert null to undefined
+    dietaryRestrictions:
+      profile.dietaryRestrictions
+        ? typeof profile.dietaryRestrictions === "string"
+          ? JSON.parse(profile.dietaryRestrictions)
+          : profile.dietaryRestrictions
+        : [],
+    allergies:
+      profile.allergies
+        ? typeof profile.allergies === "string"
+          ? JSON.parse(profile.allergies)
+          : profile.allergies
+        : [],
+    cuisinePreferences:
+      profile.cuisinePreferences
+        ? typeof profile.cuisinePreferences === "string"
+          ? JSON.parse(profile.cuisinePreferences)
+          : profile.cuisinePreferences
+        : [],
     workoutFrequency: profile.workoutFrequency ?? undefined,
-    workoutIntensity: profile.workoutIntensity ?? undefined
+    workoutIntensity: profile.workoutIntensity ?? undefined,
   };
 
   return (
     <main className="max-w-3xl mx-auto p-6">
       <Suspense fallback={<div>Loading meal planner...</div>}>
-        <MealClient key={Date.now()} profile={profileData} />
+        <MealClient profile={profileData} />
       </Suspense>
     </main>
   );

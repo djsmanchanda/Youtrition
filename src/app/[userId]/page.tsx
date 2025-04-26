@@ -19,8 +19,10 @@ export default async function UserHome({ params }: PageProps) {
   const profile = await db.profile.findUnique({ where: { id } });
   if (!profile) return redirect(`/${id}/setup`);
 
-  const filter: Filter = { diet: [], allergies: [] };
-  const recs = await recommendRecipes(id, filter);
+  // Fetch user's favorite recipes
+  const recs = await db.recipe.findMany({
+    where: { profileId: id, favorite: true },
+  });
 
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
@@ -37,17 +39,14 @@ export default async function UserHome({ params }: PageProps) {
       </div>
 
       <section>
-        <h2 className="text-xl font-semibold mb-4">Tonight’s Recommendations</h2>
+        <h2 className="text-xl font-semibold mb-4">Favourites</h2>
         {recs.length === 0 ? (
-          <p>No recipes match your pantry yet.</p>
+          <p>No favorite recipes yet.</p>
         ) : (
           <ul className="space-y-4">
-            {recs.slice(0, 5).map((r) => (
+            {recs.map((r) => (
               <li key={r.id} className="border rounded p-4">
-                <div className="flex justify-between">
-                  <span className="font-medium">{r.title}</span>
-                  <span>{r.match.toFixed(0)}% match</span>
-                </div>
+                <span className="font-medium">{r.title}</span>
               </li>
             ))}
           </ul>

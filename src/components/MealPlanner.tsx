@@ -3,8 +3,8 @@
 import React, { useState, useMemo, useId } from "react";
 import { Button } from "@/components/ui/button";
 import RecipeOptions from "./RecipeOptions";
-// Import the Recipe type from RecipeOptions to ensure consistency
 import { Recipe as RecipeOptionsRecipe } from "./RecipeOptions";
+import { Heart, HeartFilled } from "./icons";
 
 const ALL_CUISINES = [
   "Italian",
@@ -29,33 +29,28 @@ export type ProfileData = {
   workoutIntensity?: number;
 };
 
-// Define ingredient type for proper typing
 export interface Ingredient {
   name: string;
   quantity?: number;
   unit?: string;
 }
 
-// Use the Recipe type from RecipeOptions
-export type Recipe = RecipeOptionsRecipe;
+export type Recipe = RecipeOptionsRecipe & {
+  favorite?: boolean;
+};
 
 type MealPlannerProps = {
   profile: ProfileData;
 };
 
 export default function MealPlanner({ profile }: MealPlannerProps) {
-  // Generate stable IDs for form elements
   const formId = useId();
-  
-  // Initialize state from props in a stable way
   const userCuisines = profile.cuisinePreferences || [];
   const isAthlete = profile.persona === "Athlete";
 
-  // Generate cuisine options with randomization that remains stable during component lifecycle
   const options = useMemo(() => {
     let picks = [...userCuisines];
     if (picks.length >= 3) {
-      // Keep the random sorting for cuisine selections
       picks = picks.sort(() => 0.5 - Math.random()).slice(0, 3);
     } else {
       const needed = 3 - picks.length;
@@ -65,9 +60,8 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
       picks = [...picks, ...fill];
     }
     return [...picks, "Custom..."];
-  }, []); // Empty dependency array ensures this only runs once during component mount
+  }, [userCuisines]);
 
-  // Initialize state with lazy initialization to prevent unnecessary rerenders
   const [selectedCuisine, setSelectedCuisine] = useState<string>(() => options[0]);
   const [customCuisine, setCustomCuisine] = useState<string>("");
   const [mealType, setMealType] = useState<"Breakfast" | "Lunch" | "Dinner" | "Pre-Workout">("Breakfast");
@@ -79,8 +73,14 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [stage, setStage] = useState<"form" | "options" | "result">("form");
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
-  // Memoize the payload to prevent unnecessary recalculations
+  // Substitution UI state
+  const [editMode, setEditMode] = useState(false);
+  const [selectedIngredients, setSelectedIngredients] = useState<number[]>([]);
+  const [substitutionNotes, setSubstitutionNotes] = useState<Record<number, string>>({});
+  const [substitutionInfo, setSubstitutionInfo] = useState<string | null>(null);
+
   const payload = useMemo(() => {
     const cuisine = selectedCuisine === "Custom..." ? customCuisine : selectedCuisine;
     return {
@@ -89,25 +89,17 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
     };
   }, [profile, selectedCuisine, customCuisine, mealType, todayWorkout, calories, macroType]);
 
-  // Generate multiple recipe options
   async function handleSubmit() {
     setLoading(true);
     setError(null);
-    
     try {
       const res = await fetch("/api/plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      
       const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to generate recipes");
-      }
-      
-      // Set the recipe options and change to options view
+      if (!res.ok) throw new Error(data.error || "Failed to generate recipes");
       setRecipeOptions(data.results);
       setStage("options");
     } catch (e: any) {
@@ -118,125 +110,209 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
     }
   }
 
-  // Handle recipe selection - match the function signature from RecipeOptions
   function handleRecipeSelect(recipe: Recipe) {
     setSelectedRecipe(recipe);
+    setIsFavorite(recipe.favorite || false);
     setStage("result");
-    
-    // Optionally, you could make an API call to mark this recipe as selected
-    // or perform any other actions needed when a recipe is selected
-    try {
-      fetch("/api/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "select",
-          recipeId: recipe.id
-        }),
-      }).catch(e => {
-        // This is optional, so we don't need to show an error if it fails
-        console.warn("Failed to record recipe selection:", e);
-      });
-    } catch (e) {
-      // This is optional, so we don't need to show an error if it fails
-      console.warn("Failed to record recipe selection:", e);
-    }
+    setSubstitutionInfo(null);
+    setEditMode(false);
+    setSelectedIngredients([]);
+    setSubstitutionNotes({});
   }
 
-  // Go back to options from results
   function handleBackToOptions() {
     setStage("options");
     setSelectedRecipe(null);
   }
 
-  // Go back to form from options
   function handleBackToForm() {
     setStage("form");
     setRecipeOptions(null);
   }
 
-  // Define meal types as a constant to prevent recreating the array on each render
-  const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner', 'Pre-Workout'];
-  const MACRO_TYPES = ['Protein-Intensive', 'Carb-Intensive'];
+  async function handleSubmitSubstitution() {
+    if (!selectedRecipe) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "substitute",
+          selectedRecipe,
+          substitutions: selectedIngredients.map(i => ({
+            ingredient: selectedRecipe.ingredients[i],
+            note: substitutionNotes[i] || ""
+          })),
+          profile,
+          plan: payload.plan
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to substitute ingredients");
+      setSubstitutionInfo(data.substitutionInfo);
+      setSelectedRecipe(data.result);
+      setEditMode(false);
+      setSelectedIngredients([]);
+      setSubstitutionNotes({});
+    } catch (e: any) {
+      console.error("Substitution error:", e);
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
-  // Format the recipe result for better display
+  // Handle toggling the favorite status
+  async function handleToggleFavorite() {
+    if (!selectedRecipe || !selectedRecipe.id) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "favorite",
+          recipeId: selectedRecipe.id,
+          isFavorite: !isFavorite
+        }),
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update favorite status");
+      
+      setIsFavorite(!isFavorite);
+      setSelectedRecipe({
+        ...selectedRecipe,
+        favorite: !isFavorite
+      });
+    } catch (e: any) {
+      console.error("API error:", e);
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const MEAL_TYPES = ["Breakfast", "Lunch", "Dinner", "Pre-Workout"];
+  const MACRO_TYPES = ["Protein-Intensive", "Carb-Intensive"];
+
   const renderRecipe = () => {
     if (!selectedRecipe) return null;
-    
-    // Parse nutrition data if it exists
-    const nutrition = selectedRecipe.nutrition ? 
-      (typeof selectedRecipe.nutrition === 'string' ? 
-        JSON.parse(selectedRecipe.nutrition) : 
-        selectedRecipe.nutrition) : 
-      null;
-    
+    const nutrition = selectedRecipe.nutrition
+      ? (typeof selectedRecipe.nutrition === "string"
+          ? JSON.parse(selectedRecipe.nutrition)
+          : selectedRecipe.nutrition)
+      : null;
+
     return (
       <div className="bg-gray-50 p-4 mt-4 rounded">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-xl font-bold">{selectedRecipe.title}</h3>
+        <div className="flex gap-2 mb-4">
           <Button variant="outline" size="sm" onClick={handleBackToOptions}>
             Back to Options
           </Button>
+          <Button variant="default" size="sm" onClick={() => setEditMode(!editMode)}>
+            {editMode ? "Cancel Substitution" : "Substitute Ingredients"}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleToggleFavorite}
+            className={isFavorite ? "text-red-500 hover:text-red-600" : "text-gray-500 hover:text-gray-600"}
+            disabled={loading}
+          >
+            {isFavorite ? <HeartFilled className="h-4 w-4 mr-1" /> : <Heart className="h-4 w-4 mr-1" />}
+            {isFavorite ? "Favorited" : "Favorite"}
+          </Button>
         </div>
-        <div className="text-sm text-gray-600 mb-3">Cuisine: {selectedRecipe.cuisine}</div>
-        
+
+        <h3 className="text-xl font-bold mb-1">{selectedRecipe.title}</h3>
+        {substitutionInfo && (
+          <p className="text-sm text-green-700 italic mb-3">{substitutionInfo}</p>
+        )}
+
+        <p className="text-sm text-gray-600 mb-3">Cuisine: {selectedRecipe.cuisine}</p>
+
         {nutrition && (
-          <div className="mb-4">
-            <h4 className="font-semibold mb-1">Nutrition</h4>
-            <div className="flex gap-3 text-sm">
-              <div className="bg-blue-100 px-2 py-1 rounded">{nutrition.calories} kcal</div>
-              <div className="bg-red-100 px-2 py-1 rounded">{nutrition.protein}g protein</div>
-              <div className="bg-yellow-100 px-2 py-1 rounded">{nutrition.carbs}g carbs</div>
-              <div className="bg-green-100 px-2 py-1 rounded">{nutrition.fat}g fat</div>
-            </div>
+          <div className="flex gap-3 text-sm mb-4">
+            <span className="bg-blue-100 px-2 py-1 rounded">{nutrition.calories} kcal</span>
+            <span className="bg-red-100 px-2 py-1 rounded">{nutrition.protein}g protein</span>
+            <span className="bg-yellow-100 px-2 py-1 rounded">{nutrition.carbs}g carbs</span>
+            <span className="bg-green-100 px-2 py-1 rounded">{nutrition.fat}g fat</span>
           </div>
         )}
-        
+
         <div className="mb-4">
           <h4 className="font-semibold mb-1">Ingredients</h4>
           <ul className="list-disc pl-5">
-            {selectedRecipe.ingredients.map((ing: Ingredient, i: number) => (
-              <li key={i} className="text-sm">
-                {ing.quantity && ing.unit ? 
-                  <span className="font-medium">{ing.quantity} {ing.unit}</span> : 
-                  ''} {ing.name}
+            {selectedRecipe.ingredients.map((ing, i) => (
+              <li key={i} className="text-sm flex items-center">
+                {editMode && (
+                  <input
+                    type="checkbox"
+                    checked={selectedIngredients.includes(i)}
+                    onChange={() =>
+                      selectedIngredients.includes(i)
+                        ? setSelectedIngredients(selectedIngredients.filter(idx => idx !== i))
+                        : setSelectedIngredients([...selectedIngredients, i])
+                    }
+                    className="mr-2"
+                  />
+                )}
+                {ing.quantity && ing.unit && (
+                  <span className="font-medium">{ing.quantity} {ing.unit}</span>
+                )}{" "}
+                {ing.name}
+                {editMode && selectedIngredients.includes(i) && (
+                  <input
+                    type="text"
+                    placeholder="Optional note"
+                    value={substitutionNotes[i] || ""}
+                    onChange={e =>
+                      setSubstitutionNotes({ ...substitutionNotes, [i]: e.target.value })
+                    }
+                    className="ml-2 border rounded px-2 py-1 text-xs"
+                  />
+                )}
               </li>
             ))}
           </ul>
         </div>
-        
-        <div className="mb-4">
+
+        {editMode && (
+          <Button
+            onClick={handleSubmitSubstitution}
+            disabled={loading || selectedIngredients.length === 0}
+            className="w-full"
+          >
+            {loading ? "Submitting..." : "Submit Substitution"}
+          </Button>
+        )}
+
+        <div className="mt-4">
           <h4 className="font-semibold mb-1">Instructions</h4>
-          <ol className="list-decimal pl-5">
-            {selectedRecipe.instructions.split("\n").map((step: string, i: number) => (
-              <li key={i} className="text-sm mb-1">{step}</li>
+          <ol className="list-decimal pl-5 space-y-1 text-sm">
+            {selectedRecipe.instructions.split("\n").map((step, i) => (
+              <li key={i}>{step}</li>
             ))}
           </ol>
         </div>
-        
-        <div className="flex text-sm text-gray-600">
-          <div>Cook time: {selectedRecipe.cookTime} min</div>
-        </div>
-        
-        {selectedRecipe.dietaryInfo && (
-          <div className="mt-3 bg-yellow-50 p-2 rounded">
-            <h4 className="font-semibold text-sm">Dietary Information</h4>
-            <p className="text-xs">{selectedRecipe.dietaryInfo}</p>
-          </div>
-        )}
       </div>
     );
   };
 
   return (
-    <div className="border rounded p-6 space-y-4">
+    <div className="border rounded p-6 space-y-6">
       <h2 className="text-xl font-semibold">Plan a meal</h2>
-      
-      {/* Recipe form - shown in the initial stage */}
+
       {stage === "form" && (
         <>
           <div className="flex flex-wrap gap-2">
-            {options.map((c) => (
+            {options.map(c => (
               <button
                 key={`${formId}-cuisine-${c}`}
                 type="button"
@@ -247,20 +323,20 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
               </button>
             ))}
           </div>
-          
+
           {selectedCuisine === "Custom..." && (
             <input
               type="text"
               placeholder="Enter a cuisine"
               value={customCuisine}
-              onChange={(e) => setCustomCuisine(e.target.value)}
-              className="border rounded px-3 py-2 w-full"
+              onChange={e => setCustomCuisine(e.target.value)}
+              className="border rounded px-3 py-2 w-full mt-2"
               id={`${formId}-custom-cuisine`}
             />
           )}
-          
-          <div className="flex space-x-4">
-            {MEAL_TYPES.map((type) => (
+
+          <div className="flex space-x-4 mt-4">
+            {MEAL_TYPES.map(type => (
               <label key={`${formId}-meal-${type}`} className="flex items-center space-x-2">
                 <input
                   type="radio"
@@ -268,71 +344,72 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
                   value={type}
                   checked={mealType === type}
                   onChange={() => setMealType(type as any)}
-                  id={`${formId}-meal-${type}`}
                 />
                 <span>{type}</span>
               </label>
             ))}
           </div>
-          
+
           {isAthlete && (
-            <div>
-              <label htmlFor={`${formId}-workout`} className="block text-sm mb-1">Today's workout intensity (1–10)</label>
+            <div className="mt-4">
+              <label htmlFor={`${formId}-workout`} className="block text-sm mb-1">
+                Today's workout intensity (1–10)
+              </label>
               <input
-                type="range" 
-                min={1} 
-                max={10} 
+                type="range"
+                min={1}
+                max={10}
                 value={todayWorkout}
-                onChange={(e) => setTodayWorkout(Number(e.target.value))}
+                onChange={e => setTodayWorkout(Number(e.target.value))}
                 className="w-full"
                 id={`${formId}-workout`}
               />
               <div className="text-xs text-center">{todayWorkout}</div>
             </div>
           )}
-          
-          <div>
-            <label htmlFor={`${formId}-calories`} className="block text-sm mb-1">Desired calories</label>
+
+          <div className="mt-4">
+            <label htmlFor={`${formId}-calories`} className="block text-sm mb-1">
+              Desired calories
+            </label>
             <input
-              type="range" 
-              min={200} 
-              max={2000} 
+              type="range"
+              min={200}
+              max={2000}
               step={50}
               value={calories}
-              onChange={(e) => setCalories(Number(e.target.value))}
+              onChange={e => setCalories(Number(e.target.value))}
               className="w-full"
               id={`${formId}-calories`}
             />
             <div className="text-xs text-center">{calories} kcal</div>
           </div>
-          
-          <div className="flex space-x-4">
-            {MACRO_TYPES.map((m) => (
+
+          <div className="flex space-x-4 mt-4">
+            {MACRO_TYPES.map(m => (
               <label key={`${formId}-macro-${m}`} className="flex items-center space-x-2">
                 <input
-                  type="radio" 
-                  name={`${formId}-macroType`} 
+                  type="radio"
+                  name={`${formId}-macroType`}
                   value={m}
                   checked={macroType === m}
                   onChange={() => setMacroType(m as any)}
-                  id={`${formId}-macro-${m}`}
                 />
                 <span>{m}</span>
               </label>
             ))}
           </div>
-          
-          <Button 
-            onClick={handleSubmit} 
-            disabled={loading || (selectedCuisine === "Custom..." && !customCuisine)} 
-            className="w-full mt-4"
+
+          <Button
+            onClick={handleSubmit}
+            disabled={loading || (selectedCuisine === "Custom..." && !customCuisine)}
+            className="w-full mt-6"
           >
             {loading ? "Generating recipes..." : "Generate Recipe Options"}
           </Button>
         </>
       )}
-      
-      {/* Recipe options - shown after form submission */}
+
       {stage === "options" && (
         <>
           <div className="mb-4">
@@ -340,19 +417,16 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
               Back to Recipe Form
             </Button>
           </div>
-          
-          <RecipeOptions 
-            recipes={recipeOptions || []} 
+          <RecipeOptions
+            recipes={recipeOptions || []}
             onSelectRecipe={handleRecipeSelect}
             isLoading={loading}
           />
         </>
       )}
-      
-      {/* Selected recipe details - shown after recipe selection */}
+
       {stage === "result" && renderRecipe()}
-      
-      {/* Show error message if any */}
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-600 p-3 rounded">
           {error}

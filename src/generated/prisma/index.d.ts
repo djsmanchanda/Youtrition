@@ -3490,6 +3490,7 @@ export namespace Prisma {
     instructions: string | null
     cookTime: number | null
     dietaryInfo: string | null
+    favorite: boolean | null
     createdAt: Date | null
     profileId: number | null
   }
@@ -3502,6 +3503,7 @@ export namespace Prisma {
     instructions: string | null
     cookTime: number | null
     dietaryInfo: string | null
+    favorite: boolean | null
     createdAt: Date | null
     profileId: number | null
   }
@@ -3515,6 +3517,7 @@ export namespace Prisma {
     cookTime: number
     dietaryInfo: number
     nutrition: number
+    favorite: number
     createdAt: number
     profileId: number
     _all: number
@@ -3541,6 +3544,7 @@ export namespace Prisma {
     instructions?: true
     cookTime?: true
     dietaryInfo?: true
+    favorite?: true
     createdAt?: true
     profileId?: true
   }
@@ -3553,6 +3557,7 @@ export namespace Prisma {
     instructions?: true
     cookTime?: true
     dietaryInfo?: true
+    favorite?: true
     createdAt?: true
     profileId?: true
   }
@@ -3566,6 +3571,7 @@ export namespace Prisma {
     cookTime?: true
     dietaryInfo?: true
     nutrition?: true
+    favorite?: true
     createdAt?: true
     profileId?: true
     _all?: true
@@ -3666,6 +3672,7 @@ export namespace Prisma {
     cookTime: number | null
     dietaryInfo: string | null
     nutrition: JsonValue | null
+    favorite: boolean
     createdAt: Date
     profileId: number | null
     _count: RecipeCountAggregateOutputType | null
@@ -3698,6 +3705,7 @@ export namespace Prisma {
     cookTime?: boolean
     dietaryInfo?: boolean
     nutrition?: boolean
+    favorite?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3714,6 +3722,7 @@ export namespace Prisma {
     cookTime?: boolean
     dietaryInfo?: boolean
     nutrition?: boolean
+    favorite?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3728,6 +3737,7 @@ export namespace Prisma {
     cookTime?: boolean
     dietaryInfo?: boolean
     nutrition?: boolean
+    favorite?: boolean
     createdAt?: boolean
     profileId?: boolean
     profile?: boolean | Recipe$profileArgs<ExtArgs>
@@ -3742,11 +3752,12 @@ export namespace Prisma {
     cookTime?: boolean
     dietaryInfo?: boolean
     nutrition?: boolean
+    favorite?: boolean
     createdAt?: boolean
     profileId?: boolean
   }
 
-  export type RecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "cuisine" | "source" | "instructions" | "cookTime" | "dietaryInfo" | "nutrition" | "createdAt" | "profileId", ExtArgs["result"]["recipe"]>
+  export type RecipeOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "title" | "cuisine" | "source" | "instructions" | "cookTime" | "dietaryInfo" | "nutrition" | "favorite" | "createdAt" | "profileId", ExtArgs["result"]["recipe"]>
   export type RecipeInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     profile?: boolean | Recipe$profileArgs<ExtArgs>
     ingredients?: boolean | Recipe$ingredientsArgs<ExtArgs>
@@ -3780,6 +3791,7 @@ export namespace Prisma {
       cookTime: number | null
       dietaryInfo: string | null
       nutrition: Prisma.JsonValue | null
+      favorite: boolean
       createdAt: Date
       profileId: number | null
     }, ExtArgs["result"]["recipe"]>
@@ -4215,6 +4227,7 @@ export namespace Prisma {
     readonly cookTime: FieldRef<"Recipe", 'Int'>
     readonly dietaryInfo: FieldRef<"Recipe", 'String'>
     readonly nutrition: FieldRef<"Recipe", 'Json'>
+    readonly favorite: FieldRef<"Recipe", 'Boolean'>
     readonly createdAt: FieldRef<"Recipe", 'DateTime'>
     readonly profileId: FieldRef<"Recipe", 'Int'>
   }
@@ -4725,6 +4738,7 @@ export namespace Prisma {
     cookTime: 'cookTime',
     dietaryInfo: 'dietaryInfo',
     nutrition: 'nutrition',
+    favorite: 'favorite',
     createdAt: 'createdAt',
     profileId: 'profileId'
   };
@@ -4845,6 +4859,13 @@ export namespace Prisma {
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
   /**
    * Deep Input Types
@@ -5013,6 +5034,7 @@ export namespace Prisma {
     cookTime?: IntNullableFilter<"Recipe"> | number | null
     dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
     nutrition?: JsonNullableFilter<"Recipe">
+    favorite?: BoolFilter<"Recipe"> | boolean
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
@@ -5028,6 +5050,7 @@ export namespace Prisma {
     cookTime?: SortOrderInput | SortOrder
     dietaryInfo?: SortOrderInput | SortOrder
     nutrition?: SortOrderInput | SortOrder
+    favorite?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrderInput | SortOrder
     profile?: ProfileOrderByWithRelationInput
@@ -5046,6 +5069,7 @@ export namespace Prisma {
     cookTime?: IntNullableFilter<"Recipe"> | number | null
     dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
     nutrition?: JsonNullableFilter<"Recipe">
+    favorite?: BoolFilter<"Recipe"> | boolean
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
     profile?: XOR<ProfileNullableScalarRelationFilter, ProfileWhereInput> | null
@@ -5061,6 +5085,7 @@ export namespace Prisma {
     cookTime?: SortOrderInput | SortOrder
     dietaryInfo?: SortOrderInput | SortOrder
     nutrition?: SortOrderInput | SortOrder
+    favorite?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrderInput | SortOrder
     _count?: RecipeCountOrderByAggregateInput
@@ -5082,6 +5107,7 @@ export namespace Prisma {
     cookTime?: IntNullableWithAggregatesFilter<"Recipe"> | number | null
     dietaryInfo?: StringNullableWithAggregatesFilter<"Recipe"> | string | null
     nutrition?: JsonNullableWithAggregatesFilter<"Recipe">
+    favorite?: BoolWithAggregatesFilter<"Recipe"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Recipe"> | Date | string
     profileId?: IntNullableWithAggregatesFilter<"Recipe"> | number | null
   }
@@ -5248,6 +5274,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutRecipesInput
     ingredients?: IngredientCreateNestedManyWithoutRecipeInput
@@ -5262,6 +5289,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     profileId?: number | null
     ingredients?: IngredientUncheckedCreateNestedManyWithoutRecipeInput
@@ -5275,6 +5303,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutRecipesNestedInput
     ingredients?: IngredientUpdateManyWithoutRecipeNestedInput
@@ -5289,6 +5318,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
     ingredients?: IngredientUncheckedUpdateManyWithoutRecipeNestedInput
@@ -5303,6 +5333,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     profileId?: number | null
   }
@@ -5315,6 +5346,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5327,6 +5359,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -5698,6 +5731,11 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type ProfileNullableScalarRelationFilter = {
     is?: ProfileWhereInput | null
     isNot?: ProfileWhereInput | null
@@ -5712,6 +5750,7 @@ export namespace Prisma {
     cookTime?: SortOrder
     dietaryInfo?: SortOrder
     nutrition?: SortOrder
+    favorite?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
@@ -5730,6 +5769,7 @@ export namespace Prisma {
     instructions?: SortOrder
     cookTime?: SortOrder
     dietaryInfo?: SortOrder
+    favorite?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
@@ -5742,6 +5782,7 @@ export namespace Prisma {
     instructions?: SortOrder
     cookTime?: SortOrder
     dietaryInfo?: SortOrder
+    favorite?: SortOrder
     createdAt?: SortOrder
     profileId?: SortOrder
   }
@@ -5750,6 +5791,14 @@ export namespace Prisma {
     id?: SortOrder
     cookTime?: SortOrder
     profileId?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type IngredientCreateNestedManyWithoutProfileInput = {
@@ -5924,6 +5973,10 @@ export namespace Prisma {
     connectOrCreate?: IngredientCreateOrConnectWithoutRecipeInput | IngredientCreateOrConnectWithoutRecipeInput[]
     createMany?: IngredientCreateManyRecipeInputEnvelope
     connect?: IngredientWhereUniqueInput | IngredientWhereUniqueInput[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type ProfileUpdateOneWithoutRecipesNestedInput = {
@@ -6191,6 +6244,19 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type IngredientCreateWithoutProfileInput = {
     name: string
     quantity?: number | null
@@ -6226,6 +6292,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     ingredients?: IngredientCreateNestedManyWithoutRecipeInput
   }
@@ -6239,6 +6306,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     ingredients?: IngredientUncheckedCreateNestedManyWithoutRecipeInput
   }
@@ -6310,6 +6378,7 @@ export namespace Prisma {
     cookTime?: IntNullableFilter<"Recipe"> | number | null
     dietaryInfo?: StringNullableFilter<"Recipe"> | string | null
     nutrition?: JsonNullableFilter<"Recipe">
+    favorite?: BoolFilter<"Recipe"> | boolean
     createdAt?: DateTimeFilter<"Recipe"> | Date | string
     profileId?: IntNullableFilter<"Recipe"> | number | null
   }
@@ -6352,6 +6421,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     profile?: ProfileCreateNestedOneWithoutRecipesInput
   }
@@ -6365,6 +6435,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
     profileId?: number | null
   }
@@ -6429,6 +6500,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profile?: ProfileUpdateOneWithoutRecipesNestedInput
   }
@@ -6442,6 +6514,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     profileId?: NullableIntFieldUpdateOperationsInput | number | null
   }
@@ -6573,6 +6646,7 @@ export namespace Prisma {
     cookTime?: number | null
     dietaryInfo?: string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: boolean
     createdAt?: Date | string
   }
 
@@ -6610,6 +6684,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ingredients?: IngredientUpdateManyWithoutRecipeNestedInput
   }
@@ -6623,6 +6698,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     ingredients?: IngredientUncheckedUpdateManyWithoutRecipeNestedInput
   }
@@ -6636,6 +6712,7 @@ export namespace Prisma {
     cookTime?: NullableIntFieldUpdateOperationsInput | number | null
     dietaryInfo?: NullableStringFieldUpdateOperationsInput | string | null
     nutrition?: NullableJsonNullValueInput | InputJsonValue
+    favorite?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 

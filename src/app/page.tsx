@@ -1,8 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import ScrollButton from "@/components/ScrollButton";
+import { db } from "@/lib/db";
 
-export default function Home() {
+export default async function Home() {
+  // Determine the next available profile ID
+  const lastProfile = await db.profile.findFirst({ orderBy: { id: 'desc' } });
+  const nextId = (lastProfile?.id ?? 0) + 1;
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -25,7 +30,7 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/4/setup"
+              href={`/${nextId}/setup`}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold transition-colors"
             >
               Get Started
@@ -41,22 +46,22 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Image src="/camera.svg" alt="Camera" width={32} height={32} />
+              <div className="w-16 h-16 mx-auto mb-4 bg-white-100 rounded-full flex items-center justify-center">
+                <Image src="/camera.png" alt="Camera" width={100} height={100} className="rounded-full" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Snap or Enter Your Ingredients</h3>
               <p>Upload a photo of your fridge or type in what you've got.</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Image src="/chef.svg" alt="Chef" width={32} height={32} />
+                <Image src="/chef.img" alt="Chef" width={100} height={100} className="rounded-full" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Get Personalized Meal Plans</h3>
               <p>Our AI matches recipes to your pantry and dietary needs in real time.</p>
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Image src="/cart.svg" alt="Cart" width={32} height={32} />
+                <Image src="/cart.png" alt="Cart" width={100} height={100} className="rounded-full" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Shop Smarter & Eat Better</h3>
               <p>Generate grocery lists, substitutes, and nutritional breakdowns instantly.</p>
@@ -105,11 +110,11 @@ export default function Home() {
             <Link href="/2" className="group">
               <div className="bg-gray-50 p-6 rounded-lg text-center transition-transform group-hover:scale-105">
                 <Image src="/Divjot.jpg" alt="Divjot" width={100} height={100} className="rounded-full mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2">Divjot the Vegan</h3>
+                <h3 className="text-xl font-semibold mb-2">Divjot the Vegetarian</h3>
                 <p>Plant-based favorites and alternatives</p>
               </div>
             </Link>
-            <Link href="/3" className="group">
+            <Link href={`/${nextId}/setup`} className="group">
               <div className="bg-gray-50 p-6 rounded-lg text-center transition-transform group-hover:scale-105">
                 <Image src="/custom.jpg" alt="Custom" width={100} height={100} className="rounded-full mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Customize Your Own</h3>
@@ -119,8 +124,8 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Testimonials Section */}
+      
+      {/* Testimonials Section 
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-12">What Our Users Say</h2>
@@ -148,21 +153,22 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+      */}
+      
       {/* CTA Footer */}
       <footer className="bg-white py-20">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-8">Ready to Plan Your First Meal?</h2>
           <Link
-            href="/1/setup"
+            href={`/${nextId}/setup`}
             className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-full font-semibold transition-colors mb-8"
           >
             Start Your Free Demo
           </Link>
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-600">
-            <Link href="/about" className="hover:text-green-600">About</Link>
-            <Link href="/privacy" className="hover:text-green-600">Privacy</Link>
-            <Link href="/support" className="hover:text-green-600">Support</Link>
+            <Link href="#" className="hover:text-green-600">About</Link>
+            <Link href="#" className="hover:text-green-600">Privacy</Link>
+            <Link href="#" className="hover:text-green-600">Support</Link>
             <div className="flex gap-4">
               <a href="#" className="hover:text-green-600">Twitter</a>
               <a href="#" className="hover:text-green-600">Instagram</a>
