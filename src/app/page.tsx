@@ -54,7 +54,7 @@ export default async function Home() {
             </div>
             <div className="text-center p-6">
               <div className="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                <Image src="/chef.img" alt="Chef" width={100} height={100} className="rounded-full" />
+                <Image src="/chef.png" alt="Chef" width={100} height={100} className="rounded-full" />
               </div>
               <h3 className="text-xl font-semibold mb-2">Get Personalized Meal Plans</h3>
               <p>Our AI matches recipes to your pantry and dietary needs in real time.</p>
