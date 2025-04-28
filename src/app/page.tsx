@@ -11,15 +11,8 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-[80vh] flex items-center justify-center bg-gradient-to-r from-green-50 to-orange-50">
+      <section className="relative h-[80vh] flex items-center justify-center bg-gradient-to-r from-green-100 to-red-100">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/hero-bg.jpg"
-            alt="Fresh produce and healthy meals"
-            fill
-            className="object-cover opacity-20"
-            priority
-          />
         </div>
         <div className="container mx-auto px-4 z-10 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
