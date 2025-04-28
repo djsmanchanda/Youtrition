@@ -6,9 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react"; // Back icon
+import { ArrowLeft } from "lucide-react";
 
-// Questions list
 const questions = [
   "What's your name?",
   "Choose your persona",
@@ -25,10 +24,10 @@ export default function SetupPage() {
 
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Form states
   const [name, setName] = useState("");
   const [persona, setPersona] = useState("");
-  const [customPersona, setCustomPersona] = useState(""); // For "Something else"
+  const [customPersona, setCustomPersona] = useState("");
+  const [showCustomPersonaInput, setShowCustomPersonaInput] = useState(false);
   const [dietaryStr, setDietaryStr] = useState("");
   const [allergiesStr, setAllergiesStr] = useState("");
   const [cuisinesStr, setCuisinesStr] = useState("");
@@ -37,25 +36,26 @@ export default function SetupPage() {
 
   const [error, setError] = useState<string | null>(null);
 
+  const [setupComplete, setSetupComplete] = useState(false); // Black screen
+  const [startFadeToWhite, setStartFadeToWhite] = useState(false); // Fade to white
+
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement | null>(null);
 
-  // Auto-focus when step changes
+  // Auto-focus input
   useEffect(() => {
     if (!inputRef.current) return;
-
     const tagName = inputRef.current.tagName.toLowerCase();
     if (tagName === "input" || tagName === "textarea") {
       inputRef.current.focus();
     }
   }, [currentStep]);
 
-  // Keyboard shortcuts
+  // Global keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const activeTag = document.activeElement?.tagName.toLowerCase();
 
       if (activeTag === "input" || activeTag === "select" || activeTag === "textarea") {
-        // If user is typing
         if (e.key === "Enter") {
           e.preventDefault();
           handleNext();
@@ -79,7 +79,6 @@ export default function SetupPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentStep]);
 
-  // Submit final form
   async function handleSubmitFinal() {
     setError(null);
 
@@ -108,13 +107,22 @@ export default function SetupPage() {
         throw new Error(`${res.status}: ${text}`);
       }
 
-      router.push(`/${userId}`);
+      setSetupComplete(true); // Show black screen first
+
+      // After 2 seconds, start fade to white
+      setTimeout(() => {
+        setStartFadeToWhite(true);
+      }, 2000);
+
+      // After 3 seconds, navigate
+      setTimeout(() => {
+        router.push(`/${userId}`);
+      }, 3000);
     } catch (e: any) {
       setError(e.message);
     }
   }
 
-  // Go to next step
   function handleNext(e?: React.FormEvent) {
     if (e) e.preventDefault();
 
@@ -125,18 +133,39 @@ export default function SetupPage() {
     }
   }
 
-  // Go to previous step
   function handleBack() {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     }
   }
 
-  // Safe input ref setter
   function setInputRef(el: HTMLInputElement | HTMLSelectElement | null) {
     if (el) {
       inputRef.current = el;
     }
+  }
+
+  // Setup complete screen
+  if (setupComplete) {
+    return (
+      <motion.div
+        initial={{ backgroundColor: "#000000" }}
+        animate={{ backgroundColor: startFadeToWhite ? "#ffffff" : "#000000" }}
+        transition={{ duration: 1 }}
+        className="fixed inset-0 flex items-center justify-center"
+      >
+        {!startFadeToWhite && (
+          <motion.h1
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: [20, 0, 20], opacity: 1 }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+            className="text-4xl font-bold text-white"
+          >
+            Setup Complete
+          </motion.h1>
+        )}
+      </motion.div>
+    );
   }
 
   return (
@@ -153,10 +182,10 @@ export default function SetupPage() {
       {/* Title */}
       <h1 className="text-3xl font-semibold text-center">Create Your Profile</h1>
 
-      {/* Error message */}
+      {/* Error */}
       {error && <p className="text-red-500 text-center">{error}</p>}
 
-      {/* Animated form */}
+      {/* Form */}
       <AnimatePresence mode="wait">
         <motion.form
           key={currentStep}
@@ -171,7 +200,7 @@ export default function SetupPage() {
             {/* Current question */}
             <h2 className="text-lg font-medium">{questions[currentStep]}</h2>
 
-            {/* Render fields */}
+            {/* Step fields */}
             {currentStep === 0 && (
               <input
                 ref={setInputRef}
@@ -185,11 +214,11 @@ export default function SetupPage() {
 
             {currentStep === 1 && (
               <>
-                {!persona || persona === "Default" ? (
+                {!showCustomPersonaInput ? (
                   <div className="flex flex-col space-y-4">
                     <Button
                       type="button"
-                      className="w-full bg-black text-white"
+                      className="w-full bg-gray-200 text-black"
                       onClick={() => {
                         setPersona("Athlete");
                         handleNext();
@@ -199,7 +228,7 @@ export default function SetupPage() {
                     </Button>
                     <Button
                       type="button"
-                      className="w-full bg-black text-white"
+                      className="w-full bg-gray-200 text-black"
                       onClick={() => {
                         setPersona("Vegetarian");
                         handleNext();
@@ -209,10 +238,10 @@ export default function SetupPage() {
                     </Button>
                     <Button
                       type="button"
-                      className="w-full bg-black text-white"
+                      className="w-full bg-gray-200 text-black"
                       onClick={() => {
                         setPersona("Default");
-                        setCustomPersona("");
+                        setShowCustomPersonaInput(true);
                       }}
                     >
                       Something else
@@ -295,7 +324,7 @@ export default function SetupPage() {
               </>
             )}
 
-            {/* Submit/Next Button */}
+            {/* Submit / Next Button */}
             <Button
               type="submit"
               className="w-full bg-black text-white"

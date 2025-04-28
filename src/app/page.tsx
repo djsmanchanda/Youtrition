@@ -102,7 +102,7 @@ export default async function Home() {
             </Link>
             <Link href="/2" className="group">
               <div className="bg-gray-50 p-6 rounded-lg text-center transition-transform group-hover:scale-105">
-                <Image src="/Divjot.jpg" alt="Divjot" width={100} height={100} className="rounded-full mx-auto mb-4" />
+                <Image src="/divjot.png" alt="Divjot" width={100} height={100} className="rounded-full mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Divjot the Vegetarian</h3>
                 <p>Plant-based favorites and alternatives</p>
               </div>
