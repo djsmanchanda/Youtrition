@@ -126,6 +126,7 @@ exports.Prisma.ProfileScalarFieldEnum = {
   cuisinePreferences: 'cuisinePreferences',
   workoutFrequency: 'workoutFrequency',
   workoutIntensity: 'workoutIntensity',
+  goals: 'goals',
   createdAt: 'createdAt'
 };
 

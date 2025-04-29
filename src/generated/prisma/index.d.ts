@@ -1172,6 +1172,7 @@ export namespace Prisma {
     cuisinePreferences: number
     workoutFrequency: number
     workoutIntensity: number
+    goals: number
     createdAt: number
     _all: number
   }
@@ -1216,6 +1217,7 @@ export namespace Prisma {
     cuisinePreferences?: true
     workoutFrequency?: true
     workoutIntensity?: true
+    goals?: true
     createdAt?: true
     _all?: true
   }
@@ -1315,6 +1317,7 @@ export namespace Prisma {
     cuisinePreferences: JsonValue | null
     workoutFrequency: number | null
     workoutIntensity: number | null
+    goals: JsonValue | null
     createdAt: Date
     _count: ProfileCountAggregateOutputType | null
     _avg: ProfileAvgAggregateOutputType | null
@@ -1346,6 +1349,7 @@ export namespace Prisma {
     cuisinePreferences?: boolean
     workoutFrequency?: boolean
     workoutIntensity?: boolean
+    goals?: boolean
     createdAt?: boolean
     pantry?: boolean | Profile$pantryArgs<ExtArgs>
     recipes?: boolean | Profile$recipesArgs<ExtArgs>
@@ -1361,6 +1365,7 @@ export namespace Prisma {
     cuisinePreferences?: boolean
     workoutFrequency?: boolean
     workoutIntensity?: boolean
+    goals?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -1373,6 +1378,7 @@ export namespace Prisma {
     cuisinePreferences?: boolean
     workoutFrequency?: boolean
     workoutIntensity?: boolean
+    goals?: boolean
     createdAt?: boolean
   }, ExtArgs["result"]["profile"]>
 
@@ -1385,10 +1391,11 @@ export namespace Prisma {
     cuisinePreferences?: boolean
     workoutFrequency?: boolean
     workoutIntensity?: boolean
+    goals?: boolean
     createdAt?: boolean
   }
 
-  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "persona" | "dietaryRestrictions" | "allergies" | "cuisinePreferences" | "workoutFrequency" | "workoutIntensity" | "createdAt", ExtArgs["result"]["profile"]>
+  export type ProfileOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "persona" | "dietaryRestrictions" | "allergies" | "cuisinePreferences" | "workoutFrequency" | "workoutIntensity" | "goals" | "createdAt", ExtArgs["result"]["profile"]>
   export type ProfileInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     pantry?: boolean | Profile$pantryArgs<ExtArgs>
     recipes?: boolean | Profile$recipesArgs<ExtArgs>
@@ -1412,6 +1419,7 @@ export namespace Prisma {
       cuisinePreferences: Prisma.JsonValue | null
       workoutFrequency: number | null
       workoutIntensity: number | null
+      goals: Prisma.JsonValue | null
       createdAt: Date
     }, ExtArgs["result"]["profile"]>
     composites: {}
@@ -1846,6 +1854,7 @@ export namespace Prisma {
     readonly cuisinePreferences: FieldRef<"Profile", 'Json'>
     readonly workoutFrequency: FieldRef<"Profile", 'Int'>
     readonly workoutIntensity: FieldRef<"Profile", 'Int'>
+    readonly goals: FieldRef<"Profile", 'Json'>
     readonly createdAt: FieldRef<"Profile", 'DateTime'>
   }
     
@@ -4710,6 +4719,7 @@ export namespace Prisma {
     cuisinePreferences: 'cuisinePreferences',
     workoutFrequency: 'workoutFrequency',
     workoutIntensity: 'workoutIntensity',
+    goals: 'goals',
     createdAt: 'createdAt'
   };
 
@@ -4884,6 +4894,7 @@ export namespace Prisma {
     cuisinePreferences?: JsonNullableFilter<"Profile">
     workoutFrequency?: IntNullableFilter<"Profile"> | number | null
     workoutIntensity?: IntNullableFilter<"Profile"> | number | null
+    goals?: JsonNullableFilter<"Profile">
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     pantry?: IngredientListRelationFilter
     recipes?: RecipeListRelationFilter
@@ -4898,6 +4909,7 @@ export namespace Prisma {
     cuisinePreferences?: SortOrderInput | SortOrder
     workoutFrequency?: SortOrderInput | SortOrder
     workoutIntensity?: SortOrderInput | SortOrder
+    goals?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     pantry?: IngredientOrderByRelationAggregateInput
     recipes?: RecipeOrderByRelationAggregateInput
@@ -4915,6 +4927,7 @@ export namespace Prisma {
     cuisinePreferences?: JsonNullableFilter<"Profile">
     workoutFrequency?: IntNullableFilter<"Profile"> | number | null
     workoutIntensity?: IntNullableFilter<"Profile"> | number | null
+    goals?: JsonNullableFilter<"Profile">
     createdAt?: DateTimeFilter<"Profile"> | Date | string
     pantry?: IngredientListRelationFilter
     recipes?: RecipeListRelationFilter
@@ -4929,6 +4942,7 @@ export namespace Prisma {
     cuisinePreferences?: SortOrderInput | SortOrder
     workoutFrequency?: SortOrderInput | SortOrder
     workoutIntensity?: SortOrderInput | SortOrder
+    goals?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: ProfileCountOrderByAggregateInput
     _avg?: ProfileAvgOrderByAggregateInput
@@ -4949,6 +4963,7 @@ export namespace Prisma {
     cuisinePreferences?: JsonNullableWithAggregatesFilter<"Profile">
     workoutFrequency?: IntNullableWithAggregatesFilter<"Profile"> | number | null
     workoutIntensity?: IntNullableWithAggregatesFilter<"Profile"> | number | null
+    goals?: JsonNullableWithAggregatesFilter<"Profile">
     createdAt?: DateTimeWithAggregatesFilter<"Profile"> | Date | string
   }
 
@@ -5120,6 +5135,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     pantry?: IngredientCreateNestedManyWithoutProfileInput
     recipes?: RecipeCreateNestedManyWithoutProfileInput
@@ -5134,6 +5150,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     pantry?: IngredientUncheckedCreateNestedManyWithoutProfileInput
     recipes?: RecipeUncheckedCreateNestedManyWithoutProfileInput
@@ -5147,6 +5164,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUpdateManyWithoutProfileNestedInput
     recipes?: RecipeUpdateManyWithoutProfileNestedInput
@@ -5161,6 +5179,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUncheckedUpdateManyWithoutProfileNestedInput
     recipes?: RecipeUncheckedUpdateManyWithoutProfileNestedInput
@@ -5175,6 +5194,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
   }
 
@@ -5186,6 +5206,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5198,6 +5219,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -5484,6 +5506,7 @@ export namespace Prisma {
     cuisinePreferences?: SortOrder
     workoutFrequency?: SortOrder
     workoutIntensity?: SortOrder
+    goals?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -6391,6 +6414,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     recipes?: RecipeCreateNestedManyWithoutProfileInput
   }
@@ -6404,6 +6428,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     recipes?: RecipeUncheckedCreateNestedManyWithoutProfileInput
   }
@@ -6464,6 +6489,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recipes?: RecipeUpdateManyWithoutProfileNestedInput
   }
@@ -6477,6 +6503,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     recipes?: RecipeUncheckedUpdateManyWithoutProfileNestedInput
   }
@@ -6527,6 +6554,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     pantry?: IngredientCreateNestedManyWithoutProfileInput
   }
@@ -6540,6 +6568,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: number | null
     workoutIntensity?: number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
     pantry?: IngredientUncheckedCreateNestedManyWithoutProfileInput
   }
@@ -6595,6 +6624,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUpdateManyWithoutProfileNestedInput
   }
@@ -6608,6 +6638,7 @@ export namespace Prisma {
     cuisinePreferences?: NullableJsonNullValueInput | InputJsonValue
     workoutFrequency?: NullableIntFieldUpdateOperationsInput | number | null
     workoutIntensity?: NullableIntFieldUpdateOperationsInput | number | null
+    goals?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     pantry?: IngredientUncheckedUpdateManyWithoutProfileNestedInput
   }

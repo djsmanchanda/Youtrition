@@ -13,6 +13,7 @@ const questions = [
   "Choose your persona",
   "Any dietary restrictions? (comma separated)",
   "Any allergies? (comma separated)",
+  "What are your goals? (comma separated, e.g. Lose weight, Gain muscle)",
   "Cuisine preferences? (comma separated)",
   "Workout frequency (1-10)",
   "Workout intensity (1-10)",
@@ -33,6 +34,7 @@ export default function SetupPage() {
   const [cuisinesStr, setCuisinesStr] = useState("");
   const [frequency, setFrequency] = useState(5);
   const [intensity, setIntensity] = useState(5);
+  const [goalsStr, setGoalsStr] = useState("");
 
   const [error, setError] = useState<string | null>(null);
 
@@ -84,6 +86,7 @@ export default function SetupPage() {
 
     const dietary = dietaryStr.split(",").map((s) => s.trim()).filter(Boolean);
     const allergies = allergiesStr.split(",").map((s) => s.trim()).filter(Boolean);
+    const goals = goalsStr.split(",").map((s) => s.trim()).filter(Boolean);
     const cuisines = cuisinesStr.split(",").map((s) => s.trim()).filter(Boolean);
 
     try {
@@ -96,6 +99,7 @@ export default function SetupPage() {
           persona: persona === "Default" ? customPersona : persona,
           dietaryRestrictions: dietary,
           allergies,
+          goals,
           cuisinePreferences: cuisines,
           workoutFrequency: frequency,
           workoutIntensity: intensity,
@@ -290,13 +294,23 @@ export default function SetupPage() {
               <input
                 ref={setInputRef}
                 className="input w-full"
+                value={goalsStr}
+                onChange={(e) => setGoalsStr(e.target.value)}
+                placeholder="E.g., Lose weight, Gain muscle"
+              />
+            )}
+
+            {currentStep === 5 && (
+              <input
+                ref={setInputRef}
+                className="input w-full"
                 value={cuisinesStr}
                 onChange={(e) => setCuisinesStr(e.target.value)}
                 placeholder="E.g., Italian, Indian"
               />
             )}
 
-            {currentStep === 5 && (
+            {currentStep === 6 && (
               <>
                 <input
                   type="range"
@@ -310,7 +324,7 @@ export default function SetupPage() {
               </>
             )}
 
-            {currentStep === 6 && (
+            {currentStep === 7 && (
               <>
                 <input
                   type="range"

@@ -8,7 +8,9 @@
     "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "tsx prisma/seed.ts",
+    "prisma:seed": "prisma db seed"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.0",
@@ -47,6 +49,6 @@
     "typescript": "^5"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "npm run seed"
   }
 }

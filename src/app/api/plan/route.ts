@@ -38,6 +38,7 @@ interface UserProfile {
   id: string | number; // Allow number from DB profile
   name: string;
   persona?: string;
+  goals?: string[] | Prisma.JsonValue;
   dietaryRestrictions?: string | string[] | Prisma.JsonValue;
   allergies?: string | string[] | Prisma.JsonValue;
   cuisinePreferences?: string | string[] | Prisma.JsonValue;
@@ -446,6 +447,10 @@ function createPrompt(
   const al = Array.isArray(profile.allergies)
     ? profile.allergies.join(", ")
     : profile.allergies || "None";
+  const gl = Array.isArray(profile.goals)
+    ? profile.goals.join(", ")
+    : profile.goals || "None";
+
 
   const varietyInstruction = `Generate a suitable ${plan.mealType} recipe. Try to provide some variety compared to very basic options.`;
 
@@ -453,7 +458,7 @@ function createPrompt(
 You are creating a recipe suggestion based on user needs.
 
 USER PROFILE:
-- Diet: ${dr}, Allergies: ${al}
+- Dietary Restrictions: ${dr}, Allergies: ${al}, Goals: ${gl}
 - Persona: ${profile.persona || "Regular"}
 
 RECIPE REQUEST:

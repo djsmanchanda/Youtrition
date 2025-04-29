@@ -16,8 +16,10 @@ async function main() {
       dietaryRestrictions: [],
       allergies: [],
       cuisinePreferences: ["Mexican", "Italian"],
-      workoutFrequency: 5,
-      workoutIntensity: 7,
+      workoutFrequency: 10,
+      workoutIntensity: 9,
+      goals: ["Build muscle", "Improve stamina"]
+
     },
   });
 
@@ -30,6 +32,7 @@ async function main() {
       cuisinePreferences: ["Indian", "Thai"],
       workoutFrequency: 3,
       workoutIntensity: 4,
+      goals: ["Improve stamina", "Build muscle"]
     },
   });
 

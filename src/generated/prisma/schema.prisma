@@ -23,6 +23,7 @@ model Profile {
   cuisinePreferences  Json?
   workoutFrequency    Int?
   workoutIntensity    Int?
+  goals               Json?
   createdAt           DateTime @default(now())
 
   pantry  Ingredient[]
