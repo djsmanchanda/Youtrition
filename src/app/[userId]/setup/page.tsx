@@ -1,12 +1,13 @@
 // src/app/[userId]/setup/page.tsx
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import NavButtons from "@/components/NavButtons";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+
+import { ArrowLeft, ArrowRight, Plus, Slash } from "lucide-react";
 
 const questions = [
   "What's your name?",
@@ -24,7 +25,6 @@ export default function SetupPage() {
   const router = useRouter();
 
   const [currentStep, setCurrentStep] = useState(0);
-
   const [name, setName] = useState("");
   const [persona, setPersona] = useState("");
   const [customPersona, setCustomPersona] = useState("");
@@ -35,40 +35,29 @@ export default function SetupPage() {
   const [frequency, setFrequency] = useState(5);
   const [intensity, setIntensity] = useState(5);
   const [goalsStr, setGoalsStr] = useState("");
-
   const [error, setError] = useState<string | null>(null);
-
-  const [setupComplete, setSetupComplete] = useState(false); // Black screen
-  const [startFadeToWhite, setStartFadeToWhite] = useState(false); // Fade to white
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [startFadeToWhite, setStartFadeToWhite] = useState(false);
 
   const inputRef = useRef<HTMLInputElement | HTMLSelectElement | null>(null);
 
-  // Auto-focus input
+  // Auto-focus input on step change
   useEffect(() => {
-    if (!inputRef.current) return;
-    const tagName = inputRef.current.tagName.toLowerCase();
-    if (tagName === "input" || tagName === "textarea") {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
   }, [currentStep]);
 
-  // Global keyboard shortcuts
+  // Keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      const activeTag = document.activeElement?.tagName.toLowerCase();
-
-      if (activeTag === "input" || activeTag === "select" || activeTag === "textarea") {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          handleNext();
-        }
-        return;
+      const tag = document.activeElement?.tagName.toLowerCase();
+      if ((tag === "input" || tag === "select" || tag === "textarea") && e.key === "Enter") {
+        e.preventDefault();
+        return handleNext();
       }
-
-      if (e.key === "ArrowRight" && e.shiftKey) {
+      if (e.shiftKey && e.key === "ArrowRight") {
         e.preventDefault();
         handleNext();
-      } else if (e.key === "ArrowLeft" && e.shiftKey) {
+      } else if (e.shiftKey && e.key === "ArrowLeft") {
         e.preventDefault();
         handleBack();
       } else if (e.key === "Enter") {
@@ -76,18 +65,16 @@ export default function SetupPage() {
         handleNext();
       }
     }
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [currentStep]);
 
   async function handleSubmitFinal() {
     setError(null);
-
-    const dietary = dietaryStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const allergies = allergiesStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const goals = goalsStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const cuisines = cuisinesStr.split(",").map((s) => s.trim()).filter(Boolean);
+    const dietary = dietaryStr.split(",").map(s => s.trim()).filter(Boolean);
+    const allergies = allergiesStr.split(",").map(s => s.trim()).filter(Boolean);
+    const goals = goalsStr.split(",").map(s => s.trim()).filter(Boolean);
+    const cuisines = cuisinesStr.split(",").map(s => s.trim()).filter(Boolean);
 
     try {
       const res = await fetch("/api/profile", {
@@ -105,56 +92,35 @@ export default function SetupPage() {
           workoutIntensity: intensity,
         }),
       });
-
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`${res.status}: ${text}`);
-      }
-
-      setSetupComplete(true); // Show black screen first
-
-      // After 2 seconds, start fade to white
-      setTimeout(() => {
-        setStartFadeToWhite(true);
-      }, 2000);
-
-      // After 3 seconds, navigate
-      setTimeout(() => {
-        router.push(`/${userId}`);
-      }, 3000);
+      if (!res.ok) throw new Error(`Error ${res.status}: ${await res.text()}`);
+      setSetupComplete(true);
+      setTimeout(() => setStartFadeToWhite(true), 2000);
+      setTimeout(() => router.push(`/${userId}`), 3000);
     } catch (e: any) {
       setError(e.message);
     }
   }
 
   function handleNext(e?: React.FormEvent) {
-    if (e) e.preventDefault();
-
-    if (currentStep === questions.length - 1) {
-      handleSubmitFinal();
-    } else {
-      setCurrentStep((prev) => prev + 1);
-    }
+    e?.preventDefault();
+    if (currentStep === questions.length - 1) return handleSubmitFinal();
+    setCurrentStep(s => s + 1);
   }
 
   function handleBack() {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
+    if (currentStep > 0) setCurrentStep(s => s - 1);
   }
 
   function setInputRef(el: HTMLInputElement | HTMLSelectElement | null) {
-    if (el) {
-      inputRef.current = el;
-    }
+    inputRef.current = el;
   }
 
-  // Setup complete screen
+  // Final “black to white” screen
   if (setupComplete) {
     return (
       <motion.div
-        initial={{ backgroundColor: "#000000" }}
-        animate={{ backgroundColor: startFadeToWhite ? "#ffffff" : "#000000" }}
+        initial={{ backgroundColor: "#000" }}
+        animate={{ backgroundColor: startFadeToWhite ? "#fff" : "#000" }}
         transition={{ duration: 1 }}
         className="fixed inset-0 flex items-center justify-center"
       >
@@ -174,22 +140,16 @@ export default function SetupPage() {
 
   return (
     <main className="max-w-4xl mx-auto p-6 space-y-6">
-      {/* Back Button */}
-      <div
-        className="flex items-center space-x-2 mb-4 cursor-pointer"
-        onClick={handleBack}
-      >
-        <ArrowLeft className="w-5 h-5" />
-        <span className="text-sm text-gray-500">Shift + ← to go back</span>
+      <div className="flex items-baseline space-x-4 mb-4">
+        <NavButtons />
+        <span className="text-sm text-gray-500 flex items-end space-x-1">
+          Shift <Plus className="w-4 h-4 mx-1" /> <ArrowLeft className="w-4 h-4 mx-1" /> <Slash className="w-4 h-4 mx-1" /> <ArrowRight className="w-4 h-4 mx-1" />  to go back and forward
+        </span>
       </div>
 
-      {/* Title */}
       <h1 className="text-3xl font-semibold text-center">Create Your Profile</h1>
-
-      {/* Error */}
       {error && <p className="text-red-500 text-center">{error}</p>}
 
-      {/* Form */}
       <AnimatePresence mode="wait">
         <motion.form
           key={currentStep}
@@ -198,84 +158,61 @@ export default function SetupPage() {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -50 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          className="space-y-4"
         >
-          <div className="border border-gray-300 rounded p-6 space-y-4">
-            {/* Current question */}
+          <div className="bg-white rounded-3xl shadow-md border border-gray-200 p-6 space-y-6">
+            {/* Question */}
             <h2 className="text-lg font-medium">{questions[currentStep]}</h2>
 
-            {/* Step fields */}
+            {/* Input fields per step */}
             {currentStep === 0 && (
               <input
                 ref={setInputRef}
                 className="input w-full"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
                 placeholder="Your name"
                 required
               />
             )}
 
-            {currentStep === 1 && (
-              <>
-                {!showCustomPersonaInput ? (
-                  <div className="flex flex-col space-y-4">
-                    <Button
-                      type="button"
-                      className="w-full bg-gray-200 text-black"
-                      onClick={() => {
-                        setPersona("Athlete");
-                        handleNext();
-                      }}
-                    >
-                      Athlete
-                    </Button>
-                    <Button
-                      type="button"
-                      className="w-full bg-gray-200 text-black"
-                      onClick={() => {
-                        setPersona("Vegetarian");
-                        handleNext();
-                      }}
-                    >
-                      Vegetarian
-                    </Button>
-                    <Button
-                      type="button"
-                      className="w-full bg-gray-200 text-black"
-                      onClick={() => {
+            {currentStep === 1 && !showCustomPersonaInput ? (
+              <div className="flex flex-col space-y-4">
+                {["Athlete", "Vegetarian", "Default"].map(option => (
+                  <Button
+                    key={option}
+                    type="button"
+                    className="w-full bg-gray-200 text-black"
+                    onClick={() => {
+                      if (option === "Default") {
                         setPersona("Default");
                         setShowCustomPersonaInput(true);
-                      }}
-                    >
-                      Something else
-                    </Button>
-                  </div>
-                ) : (
-                  <input
-                    ref={setInputRef}
-                    className="input w-full mt-4"
-                    value={customPersona}
-                    onChange={(e) => setCustomPersona(e.target.value)}
-                    placeholder="Type your persona"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && customPersona.trim()) {
-                        e.preventDefault();
+                      } else {
+                        setPersona(option);
                         handleNext();
                       }
                     }}
-                    required
-                  />
-                )}
-              </>
-            )}
+                  >
+                    {option === "Default" ? "Something else" : option}
+                  </Button>
+                ))}
+              </div>
+            ) : currentStep === 1 ? (
+              <input
+                ref={setInputRef}
+                className="input w-full"
+                value={customPersona}
+                onChange={e => setCustomPersona(e.target.value)}
+                placeholder="Type your persona"
+                required
+              />
+            ) : null}
 
             {currentStep === 2 && (
               <input
                 ref={setInputRef}
                 className="input w-full"
                 value={dietaryStr}
-                onChange={(e) => setDietaryStr(e.target.value)}
+                onChange={e => setDietaryStr(e.target.value)}
                 placeholder="E.g., Gluten-free, Vegan"
               />
             )}
@@ -285,7 +222,7 @@ export default function SetupPage() {
                 ref={setInputRef}
                 className="input w-full"
                 value={allergiesStr}
-                onChange={(e) => setAllergiesStr(e.target.value)}
+                onChange={e => setAllergiesStr(e.target.value)}
                 placeholder="E.g., Nuts, Dairy"
               />
             )}
@@ -295,7 +232,7 @@ export default function SetupPage() {
                 ref={setInputRef}
                 className="input w-full"
                 value={goalsStr}
-                onChange={(e) => setGoalsStr(e.target.value)}
+                onChange={e => setGoalsStr(e.target.value)}
                 placeholder="E.g., Lose weight, Gain muscle"
               />
             )}
@@ -305,7 +242,7 @@ export default function SetupPage() {
                 ref={setInputRef}
                 className="input w-full"
                 value={cuisinesStr}
-                onChange={(e) => setCuisinesStr(e.target.value)}
+                onChange={e => setCuisinesStr(e.target.value)}
                 placeholder="E.g., Italian, Indian"
               />
             )}
@@ -317,7 +254,7 @@ export default function SetupPage() {
                   min="1"
                   max="10"
                   value={frequency}
-                  onChange={(e) => setFrequency(Number(e.target.value))}
+                  onChange={e => setFrequency(+e.target.value)}
                   className="w-full"
                 />
                 <div className="text-center text-sm">{frequency}</div>
@@ -331,18 +268,14 @@ export default function SetupPage() {
                   min="1"
                   max="10"
                   value={intensity}
-                  onChange={(e) => setIntensity(Number(e.target.value))}
+                  onChange={e => setIntensity(+e.target.value)}
                   className="w-full"
                 />
                 <div className="text-center text-sm">{intensity}</div>
               </>
             )}
 
-            {/* Submit / Next Button */}
-            <Button
-              type="submit"
-              className="w-full bg-black text-white"
-            >
+            <Button type="submit" className="w-full bg-black text-white">
               {currentStep === questions.length - 1 ? "Submit" : "Next"}
             </Button>
           </div>
