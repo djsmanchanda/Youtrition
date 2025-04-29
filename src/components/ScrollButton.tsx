@@ -1,16 +1,30 @@
+// src/components/ScrollButton.tsx
 'use client';
 
-export default function ScrollButton() {
+import { ButtonHTMLAttributes, ReactNode } from 'react';
+
+interface ScrollButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children?: ReactNode;
+}
+
+export default function ScrollButton({
+  children = 'See How It Works',
+  className = '',
+  ...props
+}: ScrollButtonProps) {
   const scrollToSection = () => {
-    document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+    document
+      .getElementById('how-it-works')
+      ?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <button
+      {...props}
       onClick={scrollToSection}
-      className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-3 rounded-full font-semibold transition-colors"
+      className={`${className}`}
     >
-      See How It Works
+      {children}
     </button>
   );
-} 
+}
