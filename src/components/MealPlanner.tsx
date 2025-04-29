@@ -263,10 +263,14 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
                     className="mr-2"
                   />
                 )}
-                {ing.quantity && ing.unit && (
-                  <span className="font-medium">{ing.quantity} {ing.unit}</span>
-                )}{" "}
-                {ing.name}
+                {ing.quantity && ing.unit ? (
+                  <>
+                    <span className="font-medium">{ing.quantity} {ing.unit}</span>
+                    <span className="ml-2">{ing.name}</span>
+                  </>
+                ) : (
+                  <span>{ing.name}</span>
+                )}
                 {editMode && selectedIngredients.includes(i) && (
                   <input
                     type="text"
