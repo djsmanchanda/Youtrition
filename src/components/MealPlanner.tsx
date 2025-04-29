@@ -80,6 +80,7 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   const [selectedIngredients, setSelectedIngredients] = useState<number[]>([]);
   const [substitutionNotes, setSubstitutionNotes] = useState<Record<number, string>>({});
   const [substitutionInfo, setSubstitutionInfo] = useState<string | null>(null);
+  const [removalInfo, setRemovalInfo] = useState<string | null>(null);
 
   const payload = useMemo(() => {
     const cuisine = selectedCuisine === "Custom..." ? customCuisine : selectedCuisine;
@@ -130,7 +131,7 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
     setRecipeOptions(null);
   }
 
-  async function handleSubmitSubstitution() {
+  async function handleRemoveIngredient(index: number) {
     if (!selectedRecipe) return;
     setLoading(true);
     setError(null);
@@ -139,12 +140,55 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "remove",
+          selectedRecipe,
+          ingredientToRemove: selectedRecipe.ingredients[index],
+          profile,
+          plan: payload.plan
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to remove ingredient");
+      setRemovalInfo(data.removalInfo);
+      setSelectedRecipe(data.result);
+      setEditMode(false);
+      setSelectedIngredients([]);
+      setSubstitutionNotes({});
+    } catch (e: any) {
+      console.error("Removal error:", e);
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSubmitSubstitution() {
+    if (!selectedRecipe || !selectedIngredients.length) {
+      setError("Please select ingredients to substitute");
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    try {
+      const substitutions = selectedIngredients.map(i => {
+        const ingredient = selectedRecipe.ingredients[i];
+        if (!ingredient) {
+          throw new Error(`Invalid ingredient index: ${i}`);
+        }
+        return {
+          ingredientToReplace: ingredient,
+          note: substitutionNotes[i] || ""
+        };
+      });
+
+      const res = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           action: "substitute",
           selectedRecipe,
-          substitutions: selectedIngredients.map(i => ({
-            ingredient: selectedRecipe.ingredients[i],
-            note: substitutionNotes[i] || ""
-          })),
+          substitutions,
           profile,
           plan: payload.plan
         }),
@@ -234,6 +278,9 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
         {substitutionInfo && (
           <p className="text-sm text-green-700 italic mb-3">{substitutionInfo}</p>
         )}
+        {removalInfo && (
+          <p className="text-sm text-green-700 italic mb-3">{removalInfo}</p>
+        )}
 
         <p className="text-sm text-gray-600 mb-3">Cuisine: {selectedRecipe.cuisine}</p>
 
@@ -252,16 +299,25 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
             {selectedRecipe.ingredients.map((ing, i) => (
               <li key={i} className="text-sm flex items-center">
                 {editMode && (
-                  <input
-                    type="checkbox"
-                    checked={selectedIngredients.includes(i)}
-                    onChange={() =>
-                      selectedIngredients.includes(i)
-                        ? setSelectedIngredients(selectedIngredients.filter(idx => idx !== i))
-                        : setSelectedIngredients([...selectedIngredients, i])
-                    }
-                    className="mr-2"
-                  />
+                  <div className="flex gap-2 mr-2">
+                    <input
+                      type="checkbox"
+                      checked={selectedIngredients.includes(i)}
+                      onChange={() =>
+                        selectedIngredients.includes(i)
+                          ? setSelectedIngredients(selectedIngredients.filter(idx => idx !== i))
+                          : setSelectedIngredients([...selectedIngredients, i])
+                      }
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleRemoveIngredient(i)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
                 )}
                 {ing.quantity && ing.unit ? (
                   <>
@@ -274,7 +330,7 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
                 {editMode && selectedIngredients.includes(i) && (
                   <input
                     type="text"
-                    placeholder="Optional note"
+                    placeholder="Optional note for substitution"
                     value={substitutionNotes[i] || ""}
                     onChange={e =>
                       setSubstitutionNotes({ ...substitutionNotes, [i]: e.target.value })
@@ -310,7 +366,7 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   };
 
   return (
-    <div className="border rounded p-6 space-y-6">
+    <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
       <h2 className="text-xl font-semibold">Plan a meal</h2>
 
       {stage === "form" && (

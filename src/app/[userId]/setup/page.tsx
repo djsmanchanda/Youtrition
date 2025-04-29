@@ -173,7 +173,7 @@ export default function SetupPage() {
   }
 
   return (
-    <main className="max-w-md mx-auto p-6 space-y-6">
+    <main className="max-w-4xl mx-auto p-6 space-y-6">
       {/* Back Button */}
       <div
         className="flex items-center space-x-2 mb-4 cursor-pointer"

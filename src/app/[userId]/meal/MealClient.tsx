@@ -1,22 +1,41 @@
 // src/app/[userId]/meal/MealClient.tsx
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import MealPlanner, { ProfileData } from "@/components/MealPlanner";
+import { Button } from "@/components/ui/button";
+import { Home, ArrowLeft } from "lucide-react";
 
-// Don't memoize since we want to allow re-renders with new random cuisines
 export default function MealClient({ profile }: { profile: ProfileData }) {
-  // Use state to enforce client-side rendering
+  const router = useRouter();
   const [isClient, setIsClient] = useState(false);
-  
-  // This effect runs once after hydration
+
   useEffect(() => {
     setIsClient(true);
   }, []);
-  
-  // Don't render on server to avoid hydration mismatch with random values
+
   if (!isClient) {
     return <div>Loading meal planner...</div>;
   }
-  
-  return <MealPlanner profile={profile} />;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-2">
+        <Link href="/">
+          <Button variant="outline" aria-label="Home">
+            <Home className="h-5 w-5" />
+          </Button>
+        </Link>
+        <Button
+          variant="outline"
+          aria-label="Back"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
+      <MealPlanner profile={profile} />
+    </div>
+  );
 }

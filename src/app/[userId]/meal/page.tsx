@@ -13,6 +13,8 @@ type PageProps = {
   };
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function MealPage({ params }: PageProps) {
   noStore();
   console.log("[MealPage] Received params:", params);
@@ -64,7 +66,7 @@ export default async function MealPage({ params }: PageProps) {
   };
 
   return (
-    <main className="max-w-3xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto p-6">
       <Suspense fallback={<div>Loading meal planner...</div>}>
         <MealClient profile={profileData} />
       </Suspense>
