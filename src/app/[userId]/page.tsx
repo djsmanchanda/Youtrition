@@ -37,7 +37,7 @@ export default async function UserHome({ params }: PageProps) {
 
     {/* “I’m hungry” + placeholder for upcoming features */}
     <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
-      <div className="flex justify-center items-center space-x-4">
+      <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
         <Link href={`/${id}/meal`}>
           <Button className="bg-black text-white px-4 py-2 text-sm">
             I’m hungry
