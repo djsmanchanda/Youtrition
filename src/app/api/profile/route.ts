@@ -14,9 +14,19 @@ export async function POST(req: Request) {
     workoutIntensity,
   } = await req.json();
 
-  await db.profile.create({
-    data: {
-      id,
+  await db.profile.upsert({
+    where: { id: Number(id) },
+    update: {
+      name,
+      persona,
+      dietaryRestrictions,
+      allergies,
+      cuisinePreferences,
+      workoutFrequency,
+      workoutIntensity,
+    },
+    create: {
+      id: Number(id),
       name,
       persona,
       dietaryRestrictions,
