@@ -1,9 +1,19 @@
+// .vscode/settings.json
 {
+    // Custom dictionary words for cSpell
     "cSpell.words": [
-        "autoincrement",
-        "Carb",
-        "HHMMDDMMYYYY",
-        "vercel",
-        "youtrition"
-    ]
-}
+      "autoincrement",
+      "Carb",
+      "HHMMDDMMYYYY",
+      "vercel",
+      "youtrition",
+      "shadcn",
+      "turbopack"
+    ],
+  
+    // Tell VS Code’s built-in CSS/SCSS/LESS linters to ignore Tailwind directives
+    "css.lint.unknownAtRules": "ignore",
+    "scss.lint.unknownAtRules": "ignore",
+    "less.lint.unknownAtRules": "ignore"
+  }
+  

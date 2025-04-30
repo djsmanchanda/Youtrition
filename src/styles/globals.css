@@ -1,0 +1,62 @@
+/* src/styles/globals.css */
+
+/* 1. Define your custom font faces */
+@font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIv-WdAG.otf") format("opentype");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIvBold-OrKe.otf") format("opentype");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIvBlack-aGDm.otf") format("opentype");
+    font-weight: 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIvOblique-3nx3.otf") format("opentype");
+    font-weight: 400;
+    font-style: oblique;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIvBoldOblique-ZXzB.otf") format("opentype");
+    font-weight: 700;
+    font-style: oblique;
+    font-display: swap;
+  }
+  
+  @font-face {
+    font-family: "Rabbid Highway Sign IV";
+    src: url("/fonts/RabbidHighwaySignIvBlackOblique-Eg6j.otf") format("opentype");
+    font-weight: 900;
+    font-style: oblique;
+    font-display: swap;
+  }
+  
+  /* 2. Tailwind’s layers */
+  @tailwind base;
+  @tailwind components;
+  @tailwind utilities;
+  
+  /* 3. (Optional) Global overrides */
+  html {
+    /* ensure smooth scrolling for anchor links */
+    scroll-behavior: smooth;
+  }
+  
