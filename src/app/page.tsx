@@ -164,7 +164,7 @@ export default async function Home() {
             Meet Our Users
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Link href="/1" className="group">
+            <Link href="/2" className="group">
               <div className="bg-gray-50 p-6 rounded-lg text-center transition-transform group-hover:scale-105">
                 <Image
                   src="/Pablo.jpg"
@@ -177,7 +177,7 @@ export default async function Home() {
                 <p>High-protein meal plans for peak performance</p>
               </div>
             </Link>
-            <Link href="/2" className="group">
+            <Link href="/1" className="group">
               <div className="bg-gray-50 p-6 rounded-lg text-center transition-transform group-hover:scale-105">
                 <Image
                   src="/divjot.png"
