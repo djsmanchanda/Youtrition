@@ -1,4 +1,3 @@
-// src/components/LogoOverlay.tsx
 'use client';
 
 import Link from 'next/link';
@@ -10,22 +9,26 @@ export default function LogoOverlay() {
   const isHome = path === '/';
 
   return (
-    <Link
-      href="/"
-      className={`
-        absolute
-        ${isHome ? 'top-18 w-72' : 'top-5 w-50'}
-        left-1/2 -translate-x-1/2
-        z-50
-      `}
-    >
-      <Image
-        src="/youtrition_logo_crop.png"
-        alt="Youtrition Logo"
-        width={isHome ? 300 : 150}   // match your w-32 / w-24
-        height={isHome ? 100 : 50}
-        priority
-      />
-    </Link>
+    <div className="relative w-full">
+      <Link
+        href="/"
+        className={`
+          absolute
+          left-1/2
+          ${isHome ? '-translate-x-[50%]' : '-translate-x-[48%]'}
+          ${isHome ? 'top-20 w-[300px]' : 'top-5 w-[180px]'}
+          z-50
+        `}
+      >
+        <Image
+          src="/youtrition_logo_crop.png"
+          alt="Youtrition Logo"
+          width={isHome ? 300 : 180}
+          height={isHome ? 100 : 60}
+          priority
+          className="w-full h-auto"
+        />
+      </Link>
+    </div>
   );
 }
