@@ -29,7 +29,7 @@ You are an AI assistant helping a user analyze the contents of their refrigerato
 
 Your task is to:
 - List every object that appears to be a food item, container, or visible object in the fridge.
-- Do not skip anything visible — even if you’re unsure what it is, describe it as best you can (e.g., "blue box", "jar", "white container").
+- Do not skip anything visible — even if you're unsure what it is, describe it as best you can (e.g., "blue box", "jar", "white container").
 
 For each item, return:
 - "name": a lowercase noun (e.g., "milk", "spinach", "blue box", "container").
@@ -81,18 +81,51 @@ Example:
     // Save response for debug
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const debugDir = path.resolve(process.cwd(), "fridge-debug");
-    fs.mkdirSync(debugDir, { recursive: true });
-    const debugPath = path.join(debugDir, `response-${timestamp}.json`);
-    fs.writeFileSync(debugPath, responseText);
-    console.log(`[DEBUG] Gemini raw response saved to ${debugPath}`);
-
-    const items = JSON.parse(cleaned);
-
-    if (!Array.isArray(items)) {
-      throw new Error("Gemini response is not a valid array.");
+    try {
+      fs.mkdirSync(debugDir, { recursive: true });
+      const debugPath = path.join(debugDir, `response-${timestamp}.json`);
+      fs.writeFileSync(debugPath, responseText);
+      console.log(`[DEBUG] Gemini raw response saved to ${debugPath}`);
+    } catch (err) {
+      console.error("[DEBUG] Failed to save debug file:", err);
     }
 
-    return NextResponse.json({ success: true, items });
+    let items;
+    try {
+      items = JSON.parse(cleaned);
+    } catch (err) {
+      console.error("Failed to parse Gemini response:", err);
+      return NextResponse.json(
+        { success: false, error: "Failed to parse AI response." },
+        { status: 500 }
+      );
+    }
+
+    if (!Array.isArray(items)) {
+      return NextResponse.json(
+        { success: false, error: "AI response is not a valid array." },
+        { status: 500 }
+      );
+    }
+
+    // Validate and clean items
+    const validItems = items
+      .filter((item) => {
+        return (
+          typeof item === "object" &&
+          item !== null &&
+          typeof item.name === "string" &&
+          item.name.trim() !== ""
+        );
+      })
+      .map((item) => ({
+        name: item.name.trim().toLowerCase(),
+        quantity: item.quantity?.toString() || "unknown",
+        condition: item.condition?.toString() || "unknown",
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+
+    return NextResponse.json({ success: true, items: validItems });
   } catch (err: any) {
     console.error("Fridge scan error:", err.message);
     return NextResponse.json(
