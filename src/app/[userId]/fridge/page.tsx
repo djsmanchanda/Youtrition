@@ -1,178 +1,183 @@
-// src/app/[userId]/fridge/page.tsx
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+
+type FridgeItem = {
+  name: string;
+  quantity?: string;
+  condition?: string;
+};
 
 export default function FridgePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const flashRef = useRef<HTMLDivElement>(null);
 
-  const [capturing, setCapturing] = useState(false);
-  const [detectedItems, setDetectedItems] = useState<string[]>([]);
-  const [sessionFinished, setSessionFinished] = useState(false);
-  const [scanningIntervalId, setScanningIntervalId] = useState<NodeJS.Timeout | null>(null);
+  const [step, setStep] = useState<"start" | "capture" | "processing" | "results">("start");
+  const [photos, setPhotos] = useState<Blob[]>([]);
+  const [results, setResults] = useState<FridgeItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  async function startCamera() {
+  const startCamera = async () => {
+    setError(null);
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } }, // rear camera
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
-      setCapturing(true);
-      setSessionFinished(false);
-      setDetectedItems([]);
-      startAutoScan();
+      setStep("capture");
     } catch (err) {
-      console.error("Error accessing camera:", err);
+      console.error(err);
+      setError("Unable to access camera.");
     }
-  }
+  };
 
-  function stopCamera() {
+  const stopCamera = () => {
     const stream = videoRef.current?.srcObject as MediaStream;
-    if (stream) {
-      stream.getTracks().forEach((track) => track.stop());
-    }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-    setCapturing(false);
-    stopAutoScan();
-  }
+    stream?.getTracks().forEach((t) => t.stop());
+  };
 
-  async function captureAndSend() {
-    if (!videoRef.current) return;
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
 
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    if (canvas && ctx) {
-      canvas.width = videoRef.current.videoWidth;
-      canvas.height = videoRef.current.videoHeight;
-      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+    canvas.width = videoRef.current.videoWidth;
+    canvas.height = videoRef.current.videoHeight;
+    ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
 
-      const blob = await new Promise<Blob>((resolve) =>
-        canvas.toBlob((b) => resolve(b!), "image/jpeg")
-      );
-
-      const formData = new FormData();
-      formData.append("image", blob);
-
-      try {
-        await fetch("http://localhost:5000/detect", {
-          method: "POST",
-          body: formData,
-        });
-        triggerFlash();
-      } catch (err) {
-        console.error("Error sending frame:", err);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        setPhotos((prev) => [...prev, blob].slice(0, 10));
       }
-    }
-  }
+    }, "image/jpeg");
+  };
 
-  function triggerFlash() {
-    if (flashRef.current) {
-      flashRef.current.style.opacity = "1";
-      setTimeout(() => {
-        if (flashRef.current) flashRef.current.style.opacity = "0";
-      }, 150);
-    }
-  }
+  const finishScan = async () => {
+    if (photos.length === 0) return;
 
-  function startAutoScan() {
-    const id = setInterval(() => {
-      captureAndSend();
-    }, 2000); // scan every 2 seconds
-    setScanningIntervalId(id);
-  }
+    stopCamera();
+    setStep("processing");
+    setError(null);
 
-  function stopAutoScan() {
-    if (scanningIntervalId) {
-      clearInterval(scanningIntervalId);
-      setScanningIntervalId(null);
-    }
-  }
+    const formData = new FormData();
+    photos.forEach((photo, idx) => {
+      formData.append(`image${idx + 1}`, photo);
+    });
 
-  async function finishDetection() {
     try {
-      stopAutoScan();
-      const res = await fetch("http://localhost:5000/finish", {
+      const res = await fetch("/api/fridge", {
         method: "POST",
+        body: formData,
       });
-      const data = await res.json();
-      if (data.detected_items) {
-        setDetectedItems(data.detected_items);
-        setSessionFinished(true);
-      }
-      stopCamera();
-    } catch (err) {
-      console.error("Error finishing detection:", err);
-    }
-  }
 
-  useEffect(() => {
-    return () => {
-      stopAutoScan();
-      stopCamera();
-    };
-  }, []);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to analyze fridge.");
+      }
+
+      setResults(data.items);
+      setStep("results");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Something went wrong.");
+      setStep("start");
+    }
+  };
+
+  const reset = () => {
+    setPhotos([]);
+    setResults([]);
+    setStep("start");
+    setError(null);
+  };
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-6 relative">
-      <h1 className="text-2xl font-bold">What's in My Fridge?</h1>
-
-      {/* Flash animation */}
-      <div
-        ref={flashRef}
-        className="absolute inset-0 bg-white opacity-0 pointer-events-none transition-opacity duration-150"
-      />
-
-      {!capturing && !sessionFinished && (
-        <button
-          onClick={startCamera}
-          className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-        >
-          Start Scanning
-        </button>
+    <main className="max-w-3xl mx-auto pt-20 px-6 space-y-6"> {/* pt-20 adds spacing below logo */}
+      {step === "start" && (
+        <div className="text-center space-y-4">
+          <h1 className="text-3xl font-bold">What’s in My Fridge?</h1>
+          <Button onClick={startCamera}>Start Scanning</Button>
+          {error && <p className="text-red-500">{error}</p>}
+        </div>
       )}
 
-      {capturing && (
+      {step === "capture" && (
         <div className="space-y-4">
-          <video ref={videoRef} className="w-full rounded" autoPlay muted playsInline />
-
+          {/* Cream colored camera box */}
+          <div className="rounded-2xl bg-[#fef9f3] border border-gray-200 p-4 shadow-md">
+            <video ref={videoRef} autoPlay playsInline className="rounded w-full" />
+          </div>
           <canvas ref={canvasRef} style={{ display: "none" }} />
 
-          <div className="flex gap-4">
-            <button
-              onClick={finishDetection}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          <div className="flex justify-between items-center mt-4">
+            <Button
+              onClick={capturePhoto}
+              disabled={photos.length >= 10}
+              className="bg-black text-white"
             >
-              Finish Detection
-            </button>
+              {photos.length >= 10 ? "Limit Reached (10)" : "Capture Photo"}
+            </Button>
+            <Button
+              onClick={finishScan}
+              className="bg-green-600 text-white"
+              disabled={photos.length === 0}
+            >
+              Finish Scan
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            {photos.map((blob, idx) => (
+              <img
+                key={idx}
+                src={URL.createObjectURL(blob)}
+                alt={`Fridge photo ${idx + 1}`}
+                className="rounded border object-cover"
+              />
+            ))}
           </div>
         </div>
       )}
 
-      {sessionFinished && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Detected Items:</h2>
-          {detectedItems.length === 0 ? (
-            <p>No items detected.</p>
+      {step === "processing" && (
+        <div className="text-center space-y-4 animate-pulse">
+          <h2 className="text-xl font-semibold">Analyzing fridge contents...</h2>
+          <p className="text-gray-500">This may take a few seconds.</p>
+        </div>
+      )}
+
+      {step === "results" && (
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold">Fridge Contents</h2>
+
+          {results.length === 0 ? (
+            <p className="text-gray-500">No items detected.</p>
           ) : (
-            <ul className="list-disc list-inside">
-              {detectedItems.map((item, idx) => (
-                <li key={idx}>{item}</li>
+            <ul className="space-y-2">
+              {results.map((item, idx) => (
+                <li
+                  key={idx}
+                  className="border rounded-lg p-3 shadow-sm bg-white space-y-1"
+                >
+                  <div className="font-medium capitalize">{item.name}</div>
+                  {item.quantity && <div>Quantity: {item.quantity}</div>}
+                  {item.condition && <div>Condition: {item.condition}</div>}
+                </li>
               ))}
             </ul>
           )}
 
-          <button
-            onClick={startCamera}
-            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-          >
-            Start New Scan
-          </button>
+          <div className="text-center">
+            <Button onClick={reset} className="bg-black text-white">
+              Start New Scan
+            </Button>
+          </div>
         </div>
       )}
     </main>

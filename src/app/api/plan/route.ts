@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
         console.log(prompt);
         console.log("---------------------------");
 
-        const model = getGeminiModel("gemini-1.5-flash-latest"); // Use a capable model
+        const model = getGeminiModel("gemini-2.0-flash-lite-001"); // Use a capable model
         const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: substitutionGenerationConfig,
@@ -289,7 +289,7 @@ export async function POST(req: NextRequest) {
         console.log(prompt);
         console.log("----------------------");
 
-        const model = getGeminiModel("gemini-1.5-flash-latest"); // Use a capable model
+        const model = getGeminiModel("gemini-2.0-flash-lite-001"); // Use a capable model
         const result = await model.generateContent({
             contents: [{ role: "user", parts: [{ text: prompt }] }],
             generationConfig: removalGenerationConfig,
@@ -605,7 +605,7 @@ async function generateRecipes(
     { focus: "Flavor Focused" },
   ];
   // Use a more capable model for generation too
-  const modelName = "gemini-1.5-flash-latest";
+  const modelName = "gemini-2.0-flash-lite-001";
   const generationPromises: Promise<RecipeData>[] = [];
   for (const variation of variations) {
     generationPromises.push(generateSingleRecipe(profile, plan, variation, modelName));

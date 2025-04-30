@@ -4,11 +4,12 @@
     "cSpell.words": [
       "autoincrement",
       "Carb",
+      "Favourites",
       "HHMMDDMMYYYY",
-      "vercel",
-      "youtrition",
       "shadcn",
-      "turbopack"
+      "turbopack",
+      "vercel",
+      "youtrition"
     ],
   
     // Tell VS Code’s built-in CSS/SCSS/LESS linters to ignore Tailwind directives

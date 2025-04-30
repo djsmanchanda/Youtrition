@@ -179,7 +179,7 @@ export default function SetupPage() {
                   <Button
                     key={option}
                     type="button"
-                    className="w-full bg-gray-200 text-black hover:text-white transition-colors"
+                    className="w-full bg-gray-200 text-black"
                     onClick={() => {
                       if (option === "Default") {
                         setPersona("Default");
