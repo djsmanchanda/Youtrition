@@ -1,3 +1,4 @@
+// src/app/api/fridge/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiModel } from "@/lib/gemini.server";
 import fs from "fs";
@@ -28,27 +29,30 @@ export async function POST(req: NextRequest) {
 You are an AI assistant helping a user analyze the contents of their refrigerator based on up to 10 photos.
 
 Your task is to:
-- List every object that appears to be a food item, container, or visible object in the fridge.
-- Do not skip anything visible — even if you're unsure what it is, describe it as best you can (e.g., "blue box", "jar", "white container").
+- List every distinct food item, container, or object visible in the fridge.
+- Do not count duplicates from different angles. If the same item appears in multiple images, list it only once.
+- If a label or visual feature (e.g. color, size, shape) is visible on a box or container, describe it (e.g., "tall red juice box", "blue plastic container", "pizza box", "white tub with green lid").
+- If unsure, provide your best guess (e.g., "unlabeled bottle", "clear jar with yellow liquid").
 
 For each item, return:
-- "name": a lowercase noun (e.g., "milk", "spinach", "blue box", "container").
+- "name": lowercase noun (e.g., "milk", "spinach", "red box", "container").
 - "quantity": estimated quantity or count (e.g., "1", "half bag", "2 jars").
 - "condition": freshness or guess, such as "fresh", "spoiled", "frosted", "looks old", "sealed", "unknown".
 
 Requirements:
 - Output should be a JSON array, sorted alphabetically by item name.
-- If something is ambiguous (like a sealed box), include it anyway with "condition": "unknown".
+- Do not return duplicates, even if they appear from different angles.
+- If multiple similar items are visible (e.g., two milk bottles), combine them with appropriate quantity.
 - Do not return any markdown, explanation, or commentary. Just the JSON.
 
 Example:
 [
   { "name": "apple", "quantity": "2", "condition": "fresh" },
-  { "name": "blue box", "quantity": "1", "condition": "unknown" },
-  { "name": "spinach", "quantity": "half bag", "condition": "wilted" }
+  { "name": "blue plastic box", "quantity": "1", "condition": "sealed" },
+  { "name": "pizza box", "quantity": "1", "condition": "looks old" }
 ]
 `;
-
+  
     const model = getGeminiModel("gemini-2.0-flash-lite-001");
 
     const result = await model.generateContent({

@@ -1,3 +1,4 @@
+// src/app/[userId]/fridge/page.tsx
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
@@ -236,7 +237,6 @@ export default function FridgePage() {
               playsInline
               muted
               className={`rounded w-full h-[60vh] max-h-[600px] object-cover ${!isVideoReady ? 'invisible' : ''}`}
-              style={{ transform: 'scaleX(-1)' }}
             />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="border-2 border-white/50 rounded-lg w-[90%] h-[90%]"></div>
