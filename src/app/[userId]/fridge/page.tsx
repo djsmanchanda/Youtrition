@@ -178,7 +178,10 @@ export default function FridgePage() {
   };
 
   return (
-    <main className="max-w-3xl mx-auto pt-20 px-6 space-y-6 relative">
+    <main
+      className="max-w-4xl mx-auto px-6 py-10 space-y-6"
+      style={{ backgroundColor: "#eaf1e4", minHeight: "100vh" }}
+>
       {/* Flash effect */}
       <div
         ref={flashRef}
@@ -186,11 +189,15 @@ export default function FridgePage() {
       />
 
       {step === "start" && (
-        <div className="text-center space-y-4">
-          <h1 className="text-3xl font-bold">What's in My Fridge?</h1>
-          <Button onClick={startCamera}>Start Scanning</Button>
+        <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6 text-center mt-12">
+          <h1 className="text-4xl font-bold text-[#496028]">What's in My Fridge?</h1>
+
+          <Button onClick={startCamera} className="bg-black text-white px-6 py-3 text-lg rounded-md hover:bg-black/90">
+            Start Scanning
+          </Button>
+
           {error && (
-            <div className="text-red-500 space-y-2">
+            <div className="text-red-500 space-y-4">
               <p>{error}</p>
               <Button onClick={startCamera} className="bg-black text-white">
                 Try Again
@@ -224,7 +231,7 @@ export default function FridgePage() {
       )}
 
       {step === "capture" && (
-        <div className="space-y-6">
+        <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-6 mt-12">
           <div className="rounded-2xl bg-[#fef9f3] border border-gray-200 p-4 shadow-md relative overflow-hidden">
             {!isVideoReady && (
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
@@ -291,14 +298,14 @@ export default function FridgePage() {
       )}
 
       {step === "processing" && (
-        <div className="text-center space-y-4 animate-pulse">
+        <div className="space-y-6 bg-white rounded-2xl shadow-md border border-gray-200 p-6 mt-12">
           <h2 className="text-xl font-semibold">Analyzing fridge contents...</h2>
           <p className="text-gray-500">This may take a few seconds.</p>
         </div>
       )}
 
       {step === "results" && (
-        <div className="space-y-6">
+        <div className="space-y-6 bg-white rounded-2xl shadow-md border border-gray-200 p-6 mt-12">
           <h2 className="text-2xl font-bold">Fridge Contents</h2>
 
           {results.length === 0 ? (
