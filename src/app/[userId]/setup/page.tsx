@@ -139,13 +139,13 @@ export default function SetupPage() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-6 space-y-6">
+    <main className="max-w-4xl mx-auto p-6 space-y-6" style={{ backgroundColor: "#eaf1e4", minHeight: "100vh" }}>
       <div className="flex items-baseline space-x-4 mb-4">
         <NavButtons />
 
       </div>
 
-      <h1 className="text-3xl font-semibold text-center">Create Your Profile</h1>
+      <h1 className="text-3xl font-semibold text-center text-[#496028]">Create Your Profile</h1>
       {error && <p className="text-red-500 text-center">{error}</p>}
 
       <AnimatePresence mode="wait">
@@ -157,19 +157,20 @@ export default function SetupPage() {
           exit={{ opacity: 0, x: -50 }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
         >
-          <div className="bg-white rounded-3xl shadow-md border border-gray-200 p-6 space-y-6">
+          <div className="bg-white/100 backdrop-blur-md rounded-3xl shadow-md border border-gray-200 p-6 space-y-6">
             {/* Question */}
             <h2 className="text-lg font-medium">{questions[currentStep]}</h2>
 
             {/* Input fields per step */}
             {currentStep === 0 && (
               <input
-                ref={setInputRef}
-                className="input w-full"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Your name"
-                required
+              ref={setInputRef}
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Your name"
+              required
+              className="w-full rounded-lg p-3 text-black border border-gray-300 focus:border-[#496028] focus:ring-1 focus:ring-[#496028] focus:outline-none transition-all duration-200"
               />
             )}
 
@@ -177,21 +178,24 @@ export default function SetupPage() {
               <div className="flex flex-col space-y-4">
                 {["Athlete", "Vegetarian", "Default"].map(option => (
                   <Button
-                    key={option}
-                    type="button"
-                    className="w-full bg-gray-200 text-black"
-                    onClick={() => {
-                      if (option === "Default") {
-                        setPersona("Default");
-                        setShowCustomPersonaInput(true);
-                      } else {
-                        setPersona(option);
-                        handleNext();
-                      }
-                    }}
-                  >
-                    {option === "Default" ? "Something else" : option}
-                  </Button>
+                  key={option}
+                  type="button"
+                  className={`w-full font-medium transition-colors duration-200 ${
+                    persona === option
+                      ? "bg-[#496028] text-white"
+                      : "bg-gray-100 text-black hover:bg-[#496028] hover:text-white"
+                  }`}
+                  onClick={() => {
+                    if (option === "Default") {
+                      setPersona("Default");
+                      setShowCustomPersonaInput(true);
+                    } else {
+                      setPersona(option);
+                    }
+                  }}
+                >
+                  {option === "Default" ? "Something else" : option}
+                </Button>
                 ))}
               </div>
             ) : currentStep === 1 ? (
@@ -273,7 +277,10 @@ export default function SetupPage() {
               </>
             )}
 
-            <Button type="submit" className="w-full bg-black text-white">
+            <Button
+              type="submit"
+              className="w-full border-2 border-[#496028] text-[#496028] font-bold bg-transparent hover:bg-[#496028] hover:text-white transition-colors duration-200"
+            >
               {currentStep === questions.length - 1 ? "Submit" : "Next"}
             </Button>
           </div>
