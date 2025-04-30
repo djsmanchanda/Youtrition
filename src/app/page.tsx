@@ -15,18 +15,31 @@ export default async function Home() {
       {/* Hero Section */}
       <section
         className="
-          relative h-[80vh] flex items-center justify-center
+          relative h-screen flex items-center justify-center
           bg-gradient-to-r from-green-100 to-red-100
           px-6 sm:px-8 lg:px-10
         "
       >
+        {/* bottom fade overlay */}
+        <div
+          className="
+            absolute bottom-0 left-0 w-full h-64
+            bg-gradient-to-b from-transparent to-white
+            pointer-events-none
+          "
+        />
         <div className="absolute inset-0 z-0" />
-        <div className="container mx-auto max-w-3xl text-center z-10">
+        <div className="container mx-auto max-w-3xl md:max-w-4xl text-center z-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Plan Your Perfect Meal in Seconds
           </h1>
-          <p className="text-xl md:text-2xl mb-8">
-            Smart recipe recommendations tailored to what's already in your kitchen—and your nutrition goals.
+          <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto">
+            Smart recipe recommendations
+            <br className="block md:hidden" />                            {/* mobile-only break */}
+            tailored to what's already
+            <br className="block md:hidden" />                            {/* mobile-only break */}
+            <br className="hidden md:block" />                           {/* desktop-only break */}
+            in your kitchen—and your nutrition goals.
           </p>
           <div className="flex flex-col items-center gap-4 justify-center">
             <Link

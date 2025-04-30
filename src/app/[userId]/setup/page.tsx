@@ -142,9 +142,7 @@ export default function SetupPage() {
     <main className="max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex items-baseline space-x-4 mb-4">
         <NavButtons />
-        <span className="text-sm text-gray-500 flex items-end space-x-1">
-          Shift <Plus className="w-4 h-4 mx-1" /> <ArrowLeft className="w-4 h-4 mx-1" /> <Slash className="w-4 h-4 mx-1" /> <ArrowRight className="w-4 h-4 mx-1" />  to go back and forward
-        </span>
+
       </div>
 
       <h1 className="text-3xl font-semibold text-center">Create Your Profile</h1>
@@ -181,7 +179,7 @@ export default function SetupPage() {
                   <Button
                     key={option}
                     type="button"
-                    className="w-full bg-gray-200 text-black"
+                    className="w-full bg-gray-200 text-black hover:text-white transition-colors"
                     onClick={() => {
                       if (option === "Default") {
                         setPersona("Default");

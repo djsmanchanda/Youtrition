@@ -2,14 +2,20 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
+import LogoOverlay from "@/components/LogoOverlay";
 import "./globals.css";
 
+// 1) Google fonts
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
-// Google fonts
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-
-// Rabbid Highway Sign IV (src/fonts)
+// 2) Rabbid Highway Sign IV (src/fonts)
 const rabbid = localFont({
   variable: "--font-rabbid",
   display: "swap",
@@ -28,10 +34,20 @@ export const metadata: Metadata = {
   description: "Personalized nutrition for you",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${rabbid.variable}`}>
-      <body className="font-sans antialiased">{children}</body>
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${rabbid.variable}`}
+    >
+      <body className="relative font-sans antialiased">
+        <LogoOverlay />
+        <main>{children}</main>
+      </body>
     </html>
   );
 }
