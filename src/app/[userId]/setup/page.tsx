@@ -12,10 +12,10 @@ import { ArrowLeft, ArrowRight, Plus, Slash } from "lucide-react";
 const questions = [
   "What's your name?",
   "Choose your persona",
-  "Any dietary restrictions? (comma separated)",
-  "Any allergies? (comma separated)",
-  "What are your goals? (comma separated, e.g. Lose weight, Gain muscle)",
-  "Cuisine preferences? (comma separated)",
+  "Any dietary restrictions?",
+  "Any allergies?",
+  "What are your goals?",
+  "Cuisine preferences?",
   "Workout frequency (1-10)",
   "Workout intensity (1-10)",
 ];
@@ -210,43 +210,182 @@ export default function SetupPage() {
             ) : null}
 
             {currentStep === 2 && (
-              <input
-                ref={setInputRef}
-                className="input w-full"
-                value={dietaryStr}
-                onChange={e => setDietaryStr(e.target.value)}
-                placeholder="E.g., Gluten-free, Vegan"
-              />
+              <>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {["Vegan", "Vegetarian", "Gluten-Free", "Dairy-Free", "Eggitarian","Halal", "Kosher","Keto"].map(option => (
+                    <button
+                      type="button"
+                      key={option}
+                      className={`
+                        border rounded-lg px-3 py-2 text-sm font-medium
+                        ${dietaryStr.toLowerCase().includes(option.toLowerCase())
+                          ? "bg-[#496028] text-white"
+                          : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"
+                        }
+                      `}
+                      onClick={() => {
+                        const selected = dietaryStr.split(",").map(s => s.trim()).filter(Boolean);
+                        const alreadySelected = selected.map(s => s.toLowerCase()).includes(option.toLowerCase());
+                        const updated = alreadySelected
+                          ? selected.filter(s => s.toLowerCase() !== option.toLowerCase())
+                          : [...selected, option];
+                        setDietaryStr(updated.join(", "));
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  ref={setInputRef}
+                  type="text"
+                  value={dietaryStr}
+                  onChange={e => setDietaryStr(e.target.value)}
+                  placeholder="Add custom (comma separated)"
+                  className="w-full rounded-lg p-3 text-black border border-gray-300 focus:border-[#496028] focus:ring-1 focus:ring-[#496028] focus:outline-none transition-all duration-200"
+                />
+              </>
             )}
 
             {currentStep === 3 && (
-              <input
-                ref={setInputRef}
-                className="input w-full"
-                value={allergiesStr}
-                onChange={e => setAllergiesStr(e.target.value)}
-                placeholder="E.g., Nuts, Dairy"
-              />
+              <>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {[
+                    "Nuts", "Dairy", "Eggs", "Soy", "Gluten",
+                    "Shellfish", "Wheat", "Sesame"
+                  ].map(option => (
+                    <button
+                      type="button"
+                      key={option}
+                      className={`
+                        border rounded-lg px-3 py-2 text-sm font-medium
+                        ${allergiesStr.toLowerCase().includes(option.toLowerCase())
+                          ? "bg-[#496028] text-white"
+                          : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"
+                        }
+                      `}
+                      onClick={() => {
+                        const selected = allergiesStr.split(",").map(s => s.trim()).filter(Boolean);
+                        const alreadySelected = selected.map(s => s.toLowerCase()).includes(option.toLowerCase());
+                        const updated = alreadySelected
+                          ? selected.filter(s => s.toLowerCase() !== option.toLowerCase())
+                          : [...selected, option];
+                        setAllergiesStr(updated.join(", "));
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  ref={setInputRef}
+                  type="text"
+                  value={allergiesStr}
+                  onChange={e => setAllergiesStr(e.target.value)}
+                  placeholder="Add custom allergies (comma separated)"
+                  className="w-full rounded-lg p-3 text-black border border-gray-300 focus:border-[#496028] focus:ring-1 focus:ring-[#496028] focus:outline-none transition-all duration-200"
+                />
+              </>
             )}
 
             {currentStep === 4 && (
-              <input
-                ref={setInputRef}
-                className="input w-full"
-                value={goalsStr}
-                onChange={e => setGoalsStr(e.target.value)}
-                placeholder="E.g., Lose weight, Gain muscle"
-              />
+              <>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {[
+                    "Lose weight",
+                    "Gain muscle",
+                    "Maintain weight",
+                    "Eat healthier",
+                    "Improve energy",
+                    "Manage blood sugar",
+                    "Meal recommendations",
+                    "Just trying things out"
+                  ].map(option => (
+                    <button
+                      type="button"
+                      key={option}
+                      className={`
+                        border rounded-lg px-3 py-2 text-sm font-medium
+                        ${goalsStr.toLowerCase().includes(option.toLowerCase())
+                          ? "bg-[#496028] text-white"
+                          : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"
+                        }
+                      `}
+                      onClick={() => {
+                        const selected = goalsStr.split(",").map(s => s.trim()).filter(Boolean);
+                        const alreadySelected = selected.map(s => s.toLowerCase()).includes(option.toLowerCase());
+                        const updated = alreadySelected
+                          ? selected.filter(s => s.toLowerCase() !== option.toLowerCase())
+                          : [...selected, option];
+                        setGoalsStr(updated.join(", "));
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  ref={setInputRef}
+                  type="text"
+                  value={goalsStr}
+                  onChange={e => setGoalsStr(e.target.value)}
+                  placeholder="Add custom goals (comma separated)"
+                  className="w-full rounded-lg p-3 text-black border border-gray-300 focus:border-[#496028] focus:ring-1 focus:ring-[#496028] focus:outline-none transition-all duration-200"
+                />
+              </>
             )}
 
             {currentStep === 5 && (
-              <input
-                ref={setInputRef}
-                className="input w-full"
-                value={cuisinesStr}
-                onChange={e => setCuisinesStr(e.target.value)}
-                placeholder="E.g., Italian, Indian"
-              />
+              <>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {[
+                    "Italian",
+                    "Indian",
+                    "Chinese",
+                    "Mexican",
+                    "Japanese",
+                    "Jain",
+                    "Thai",
+                    "American",
+                    "French",
+                    "Middle Eastern"
+                  ].map(option => (
+                    <button
+                      type="button"
+                      key={option}
+                      className={`
+                        border rounded-lg px-3 py-2 text-sm font-medium
+                        ${cuisinesStr.toLowerCase().includes(option.toLowerCase())
+                          ? "bg-[#496028] text-white"
+                          : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"
+                        }
+                      `}
+                      onClick={() => {
+                        const selected = cuisinesStr.split(",").map(s => s.trim()).filter(Boolean);
+                        const alreadySelected = selected.map(s => s.toLowerCase()).includes(option.toLowerCase());
+                        const updated = alreadySelected
+                          ? selected.filter(s => s.toLowerCase() !== option.toLowerCase())
+                          : [...selected, option];
+                        setCuisinesStr(updated.join(", "));
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+
+                <input
+                  ref={setInputRef}
+                  type="text"
+                  value={cuisinesStr}
+                  onChange={e => setCuisinesStr(e.target.value)}
+                  placeholder="Add custom cuisines (comma separated)"
+                  className="w-full rounded-lg p-3 text-black border border-gray-300 focus:border-[#496028] focus:ring-1 focus:ring-[#496028] focus:outline-none transition-all duration-200"
+                />
+              </>
             )}
 
             {currentStep === 6 && (
@@ -259,7 +398,22 @@ export default function SetupPage() {
                   onChange={e => setFrequency(+e.target.value)}
                   className="w-full"
                 />
-                <div className="text-center text-sm">{frequency}</div>
+                <div className="text-center text-sm mt-2">
+                  <span className="font-medium text-lg">{frequency}</span>{" "}
+                  <span className="font-medium text-lg">
+                    {(() => {
+                      if (frequency <= 1) return "- Never";
+                      if (frequency === 2) return "- Almost never";
+                      if (frequency <= 4) return "- A few times a week";
+                      if (frequency === 5) return "- Most days";
+                      if (frequency === 6) return "- Almost every day";
+                      if (frequency === 7) return "- Every day";
+                      if (frequency === 8) return "- At least once a day";
+                      if (frequency === 9) return "- More than once a day";
+                      return "- Multiple times a day";
+                    })()}
+                  </span>
+                </div>
               </>
             )}
 
@@ -273,7 +427,23 @@ export default function SetupPage() {
                   onChange={e => setIntensity(+e.target.value)}
                   className="w-full"
                 />
-                <div className="text-center text-sm">{intensity}</div>
+                <div className="text-center text-sm mt-2">
+                  <span className="font-medium text-lg">{intensity}</span>{" "}
+                  <span className="font-medium text-lg">
+                    {(() => {
+                      if (intensity === 1) return "- I warm up by sitting.";
+                      if (intensity === 2) return "- Light walks, remote in hand.";
+                      if (intensity === 3) return "- Took the stairs... once.";
+                      if (intensity === 4) return "- Cycled a bit, broke a light sweat.";
+                      if (intensity === 5) return "- Weekend jogger, occasional gym bro.";
+                      if (intensity === 6) return "- Played a sport, maybe scored too.";
+                      if (intensity === 7) return "- Consistent workouts, feeling strong.";
+                      if (intensity === 8) return "- Gym is my second home.";
+                      if (intensity === 9) return "- Intensity? Call me beast mode.";
+                      return "- Olympic-level grind. I eat burpees for breakfast.";
+                    })()}
+                  </span>
+                </div>
               </>
             )}
 

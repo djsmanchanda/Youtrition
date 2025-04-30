@@ -7,13 +7,13 @@ import { Suspense } from "react";
 import { unstable_noStore as noStore } from "next/cache";
 import { ProfileData as MealClientProfileData } from "@/components/MealPlanner";
 
+export const dynamic = "force-dynamic";
+
 type PageProps = {
   params: {
     userId: string;
   };
 };
-
-export const dynamic = "force-dynamic";
 
 export default async function MealPage({ params }: PageProps) {
   noStore();
@@ -66,7 +66,7 @@ export default async function MealPage({ params }: PageProps) {
   };
 
   return (
-    <main className="max-w-4xl mx-auto p-6">
+    <main className="max-w-4xl mx-auto px-6 py-10 space-y-6" style={{ backgroundColor: "#eaf1e4", minHeight: "100vh" }}>
       <Suspense fallback={<div>Loading meal planner...</div>}>
         <MealClient profile={profileData} />
       </Suspense>

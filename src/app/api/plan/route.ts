@@ -604,13 +604,18 @@ async function generateRecipes(
     { focus: "Standard Balanced" },
     { focus: "Flavor Focused" },
   ];
-  // Use a more capable model for generation too
+  
+  // Use a more capable model for generation
   const modelName = "gemini-2.0-flash-lite-001";
   const generationPromises: Promise<RecipeData>[] = [];
+  
+  // Generate recipes sequentially to ensure variety
+  const results: RecipeData[] = [];
   for (const variation of variations) {
-    generationPromises.push(generateSingleRecipe(profile, plan, variation, modelName));
+    const recipe = await generateSingleRecipe(profile, plan, variation, modelName);
+    results.push(recipe);
   }
-  const results = await Promise.all(generationPromises);
+  
   return results;
 }
 
@@ -619,81 +624,86 @@ async function generateSingleRecipe(
   profile: UserProfile,
   plan: MealPlan,
   variation: RecipeVariation,
-  modelName: string // Added parameter
+  modelName: string
 ): Promise<RecipeData> {
-  const prompt = createGenerationPrompt(profile, plan, variation); // Changed name for clarity
+  const prompt = createGenerationPrompt(profile, plan, variation);
 
-  const model = getGeminiModel(modelName); // Use specified model
+  const model = getGeminiModel(modelName);
 
   const generationConfig = {
-      temperature: 0.45, // Slightly increased creativity
-      topP: 0.9,      // Wider range
-      topK: 50,      // Wider range
-      maxOutputTokens: 2048,
-      responseMimeType: "application/json",
+    temperature: 0.35, // Lower temperature for more consistent output
+    topP: 0.8,        // More focused sampling
+    topK: 40,         // More focused sampling
+    maxOutputTokens: 2048,
+    responseMimeType: "application/json",
   };
 
   let attempt = 0;
-  const maxAttempts = 3; // Allow one more retry
+  const maxAttempts = 3;
 
   while (attempt < maxAttempts) {
-      attempt++;
-      try {
-          console.log(`Generating recipe for: ${variation.focus}, Attempt: ${attempt}`);
-          const result = await model.generateContent({
-              contents: [{ role: "user", parts: [{ text: prompt }] }],
-              generationConfig: generationConfig,
-          });
+    attempt++;
+    try {
+      console.log(`Generating recipe for: ${variation.focus}, Attempt: ${attempt}`);
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: generationConfig,
+      });
 
-          const responseText = await result.response.text();
-          const cleanedText = responseText.replace(/```json\n?|\n?```/g, "").trim(); // Clean markdown ```json
+      const responseText = await result.response.text();
+      const cleanedText = responseText.replace(/```json\n?|\n?```/g, "").trim();
 
-          if (!cleanedText) {
-              throw new Error("Received empty response from AI.");
-          }
-
-          const jsonResult = JSON.parse(cleanedText);
-          const validatedResult = RecipeSchema.parse(jsonResult); // Validate structure AND types
-
-          // Map from Zod/AI structure (snake_case) to RecipeData (camelCase where needed)
-          const recipeData: RecipeData = {
-             id: undefined, // No ID yet
-             title: validatedResult.title,
-             cuisine: validatedResult.cuisine,
-             instructions: validatedResult.instructions, // Keep as array for now, convert before DB save
-             cookTime: validatedResult.cook_time, // Use optional field directly
-             dietaryInfo: validatedResult.dietary_info, // Use optional field directly
-             ingredients: validatedResult.ingredients,
-             nutrition: validatedResult.nutrition, // Use optional field directly
-             favorite: false, // Default for new recipes
-          };
-          console.log(`Successfully generated recipe for: ${variation.focus}`);
-          return recipeData; // Return RecipeData structure
-
-      } catch (error: any) {
-          console.error(`Error generating/parsing recipe for "${variation.focus}", Attempt ${attempt}:`, error.message);
-          if (error instanceof z.ZodError) {
-              console.error("Zod Validation Errors:", error.format());
-          }
-           if (error instanceof Error && error.message.includes("SAFETY")) {
-              console.error("Generation failed due to safety settings.");
-              // Optionally retry with different parameters or handle specifically
-           }
-          if (attempt >= maxAttempts) {
-              console.error(`Failed to generate valid recipe for "${variation.focus}" after ${maxAttempts} attempts. Falling back to mock.`);
-              return createVariationMock(plan, variation); // Ensure mock matches RecipeData
-          }
-          // Optional: Add a small delay before retrying
-          await new Promise(resolve => setTimeout(resolve, 500));
+      if (!cleanedText) {
+        throw new Error("Received empty response from AI.");
       }
+
+      const jsonResult = JSON.parse(cleanedText);
+      
+      // Validate and fix ingredient quantities and units
+      if (Array.isArray(jsonResult.ingredients)) {
+        jsonResult.ingredients = jsonResult.ingredients.map((ing: any) => ({
+          name: ing.name,
+          quantity: typeof ing.quantity === 'number' ? ing.quantity : 1,
+          unit: typeof ing.unit === 'string' ? ing.unit : 'piece'
+        }));
+      }
+
+      const validatedResult = RecipeSchema.parse(jsonResult);
+
+      const recipeData: RecipeData = {
+        id: undefined,
+        title: validatedResult.title,
+        cuisine: validatedResult.cuisine,
+        instructions: validatedResult.instructions,
+        cookTime: validatedResult.cook_time,
+        dietaryInfo: validatedResult.dietary_info,
+        ingredients: validatedResult.ingredients,
+        nutrition: validatedResult.nutrition,
+        favorite: false,
+      };
+      
+      console.log(`Successfully generated recipe for: ${variation.focus}`);
+      return recipeData;
+
+    } catch (error: any) {
+      console.error(`Error generating/parsing recipe for "${variation.focus}", Attempt ${attempt}:`, error.message);
+      if (error instanceof z.ZodError) {
+        console.error("Zod Validation Errors:", error.format());
+      }
+      if (attempt >= maxAttempts) {
+        console.error(`Failed to generate valid recipe for "${variation.focus}" after ${maxAttempts} attempts. Falling back to mock.`);
+        return createVariationMock(plan, variation);
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Longer delay between attempts
+    }
   }
-  // Should not be reached if maxAttempts > 0, but satisfies TypeScript
+  
   console.error(`Exhausted attempts, returning mock for ${variation.focus}`);
   return createVariationMock(plan, variation);
 }
 
 // --- Helper: Create GENERATION Prompt (Renamed) ---
-function createGenerationPrompt( // Renamed from createPrompt
+function createGenerationPrompt(
   profile: UserProfile,
   plan: MealPlan,
   variation: RecipeVariation
@@ -708,9 +718,15 @@ function createGenerationPrompt( // Renamed from createPrompt
     ? profile.goals.join(", ")
     : profile.goals?.toString() || "None";
 
-
   const varietyInstruction = `Generate a suitable ${plan.mealType} recipe for the specified cuisine. Be creative and provide interesting options, not just the most basic ones.`;
-  const focusInstruction = variation.focus === 'Quick & Easy' ? '(Prioritize simplicity and speed, aim for under 30-35 minutes total time)' : variation.focus === 'Flavor Focused' ? '(Emphasize depth of flavor, interesting ingredients, or techniques)' : '(Provide a standard, balanced approach to the recipe)';
+  
+  const focusInstructions = {
+    'Quick & Easy': `(Prioritize simplicity and speed, aim for under 30-35 minutes total time. Use minimal ingredients and simple techniques. Focus on one-pot meals, stir-fries, or quick bakes.)`,
+    'Flavor Focused': `(Emphasize depth of flavor through complex spice blends, marinades, or cooking techniques. Consider using unique ingredients or flavor combinations specific to ${plan.cuisine} cuisine.)`,
+    'Standard Balanced': `(Provide a well-rounded approach with a good mix of protein, vegetables, and carbs. Focus on traditional ${plan.cuisine} cooking methods and balanced flavors.)`
+  };
+
+  const focusInstruction = focusInstructions[variation.focus as keyof typeof focusInstructions] || '(Provide a standard, balanced approach to the recipe)';
 
   return `You are a creative chef AI generating a single, complete recipe suggestion.
 
@@ -729,10 +745,26 @@ RECIPE REQUEST:
 
 ${varietyInstruction}
 
+VARIETY REQUIREMENTS:
+1. Each recipe variation MUST be significantly different from the others:
+   - Quick & Easy: Focus on simple, fast-cooking methods (stir-fry, one-pot, sheet pan)
+   - Flavor Focused: Emphasize complex flavors, unique ingredients, or special techniques
+   - Standard Balanced: Use traditional cooking methods and balanced ingredient combinations
+2. Use different main ingredients or cooking methods for each variation
+3. Vary the texture and presentation style between variations
+4. Ensure each recipe has a distinct character while maintaining the ${plan.cuisine} cuisine style
+
+CRITICAL REQUIREMENTS:
+1. EVERY ingredient MUST have a quantity and unit. Do not leave any null or undefined.
+2. Use standard units: grams (g), milliliters (ml), teaspoons (tsp), tablespoons (tbsp), cups, pieces, etc.
+3. Quantities must be numbers, not strings or null.
+4. For whole items (like "1 onion"), use quantity: 1, unit: "piece"
+5. For items where quantity varies (like "salt to taste"), use quantity: 1, unit: "to taste"
+6. For items where unit isn't applicable (like "1 pinch"), use quantity: 1, unit: "pinch"
+
 OUTPUT REQUIREMENTS:
 - Respond ONLY with a valid JSON object matching the schema below.
 - Ensure all fields are populated accurately based on the generated recipe.
-- Provide realistic ingredient quantities.
 - Instructions should be clear, step-by-step.
 - Calculate nutrition as accurately as possible.
 - Do NOT include any explanatory text, markdown formatting (like \`\`\`json), or anything outside the single JSON object.
@@ -744,11 +776,23 @@ JSON SCHEMA:
   "instructions": ["string (Step 1)", "string (Step 2)", ...],
   "cook_time": number (Estimated total cooking/prep time in minutes),
   "dietary_info": "string (e.g., 'Vegan, Gluten-Free', 'High-Protein')",
-  "ingredients": [{ "name": "string", "quantity": number?, "unit": "string?" }, ...],
-  "nutrition": { "calories": number, "protein": number, "carbs": number, "fat": number }
+  "ingredients": [
+    { 
+      "name": "string (ingredient name)", 
+      "quantity": number (REQUIRED, must be a number), 
+      "unit": "string (REQUIRED, must be a valid unit)" 
+    },
+    ...
+  ],
+  "nutrition": { 
+    "calories": number, 
+    "protein": number, 
+    "carbs": number, 
+    "fat": number 
+  }
 }
 
-Generate the recipe JSON now.`;
+Generate the recipe JSON now, ensuring ALL ingredients have valid quantities and units, and that this recipe is distinctly different from other variations.`;
 }
 
 // --- Mock Recipe Generation (Ensure matches RecipeData) ---

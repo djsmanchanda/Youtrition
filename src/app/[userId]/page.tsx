@@ -1,4 +1,3 @@
-// src/app/[userId]/page.tsx
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
@@ -24,47 +23,49 @@ export default async function UserHome({ params }: PageProps) {
   });
 
   return (
-    <main className="max-w-4xl mx-auto p-6 space-y-4">
+    <main
+      className="max-w-4xl mx-auto px-6 py-10 space-y-6"
+      style={{ backgroundColor: "#eaf1e4", minHeight: "100vh" }}
+    >
       <NavButtons />
 
       {/* Header card */}
       <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
-        <h1 className="text-3xl font-bold">Welcome, {profile.name}!</h1>
-        <p className="text-sm text-muted-foreground">
-          Persona: {profile.persona ?? "Unspecified"}
-        </p>
+        <h1 className="text-3xl font-bold text-[#496028]">Welcome, {profile.name}!</h1>
       </div>
 
-    {/* “I’m hungry” + placeholder for upcoming features */}
-    <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
-      <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-        <Link href={`/${id}/meal`}>
-          <Button className="bg-black text-white px-4 py-2 text-sm">
-            I’m hungry
-          </Button>
-        </Link>
-        <Link href={`/${id}/fridge`}>
-          <Button className="bg-black text-white px-4 py-2 text-sm">
-          What's in my fridge?
-          </Button>
-        </Link>
-        <Button className="bg-black text-white px-4 py-2 text-sm italic" disabled>
-          More features coming soon
-        </Button>
-      </div>
-    </div>
-
-
-      {/* Favourites card */}
+      {/* Main Actions */}
       <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
-        <h2 className="text-xl font-semibold">Favourites</h2>
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
+          <Link href={`/${id}/meal`}>
+            <Button className="bg-[#496028] text-white px-4 py-2 text-sm hover:bg-[#3b4f21]">
+              I’m hungry
+            </Button>
+          </Link>
+          <Link href={`/${id}/fridge`}>
+            <Button className="bg-[#496028] text-white px-4 py-2 text-sm hover:bg-[#3b4f21]">
+              What's in my fridge?
+            </Button>
+          </Link>
+          <Button
+            className="bg-gray-200 text-gray-600 italic px-4 py-2 text-sm"
+            disabled
+          >
+            More features coming soon
+          </Button>
+        </div>
+      </div>
+
+      {/* Favorites */}
+      <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
+        <h2 className="text-xl font-semibold text-[#496028]">Favourites</h2>
         {recs.length === 0 ? (
-          <p>No favorite recipes yet.</p>
+          <p className="text-gray-500">No favorite recipes yet.</p>
         ) : (
           <ul className="space-y-3">
             {recs.map((r) => (
-              <li key={r.id} className="border rounded-lg p-4">
-                <span className="font-medium">{r.title}</span>
+              <li key={r.id} className="border rounded-lg p-4 bg-gray-50">
+                <span className="font-medium text-black">{r.title}</span>
               </li>
             ))}
           </ul>

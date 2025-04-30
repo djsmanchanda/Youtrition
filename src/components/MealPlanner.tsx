@@ -368,48 +368,61 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
   return (
     <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 space-y-4">
       <h2 className="text-xl font-semibold">Plan a meal</h2>
-
+  
       {stage === "form" && (
         <>
-          <div className="flex flex-wrap gap-2">
+          {/* Cuisine Section */}
+          <h3 className="text-md font-semibold text-[#496028] mb-1">Cuisine</h3>
+          <div className="grid grid-cols-2 gap-3 mt-1">
             {options.map(c => (
               <button
                 key={`${formId}-cuisine-${c}`}
                 type="button"
-                className={`px-3 py-1 rounded ${c === selectedCuisine ? "bg-blue-500 text-white" : "border"}`}
+                className={`
+                  px-3 py-1.5 text-sm rounded-md font-medium transition-all
+                  ${selectedCuisine === c
+                    ? "bg-[#496028] text-white"
+                    : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"}
+                `}
                 onClick={() => setSelectedCuisine(c)}
               >
                 {c}
               </button>
             ))}
           </div>
-
+  
           {selectedCuisine === "Custom..." && (
             <input
               type="text"
               placeholder="Enter a cuisine"
               value={customCuisine}
               onChange={e => setCustomCuisine(e.target.value)}
-              className="border rounded px-3 py-2 w-full mt-2"
+              className="w-full mt-3 rounded-lg p-2 text-sm border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#496028]"
               id={`${formId}-custom-cuisine`}
             />
           )}
-
-          <div className="flex space-x-4 mt-4">
-            {MEAL_TYPES.map(type => (
-              <label key={`${formId}-meal-${type}`} className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name={`${formId}-mealType`}
-                  value={type}
-                  checked={mealType === type}
-                  onChange={() => setMealType(type as any)}
-                />
-                <span>{type}</span>
-              </label>
+  
+          {/* Meal of the Day Section */}
+          <h3 className="text-md font-semibold text-[#496028] mt-4 mb-1">Meal of the Day</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {["Breakfast", "Lunch", "Dinner", "Pre-Workout"].map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setMealType(type as any)}
+                className={`
+                  px-3 py-1.5 text-sm rounded-md font-medium transition-all
+                  ${mealType === type 
+                    ? "bg-[#496028] text-white" 
+                    : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"}
+                `}
+              >
+                {type}
+              </button>
             ))}
           </div>
-
+  
+          {/* Athlete only: Workout intensity */}
           {isAthlete && (
             <div className="mt-4">
               <label htmlFor={`${formId}-workout`} className="block text-sm mb-1">
@@ -427,43 +440,58 @@ export default function MealPlanner({ profile }: MealPlannerProps) {
               <div className="text-xs text-center">{todayWorkout}</div>
             </div>
           )}
+  
+          {/* Desired Calories Section */}
+          <h3 className="text-md font-semibold text-[#496028] mt-4 mb-1">Desired Calories</h3>
+          <input
+            type="range"
+            min={100}
+            max={1500}
+            step={100}
+            value={calories}
+            onChange={e => setCalories(Number(e.target.value))}
+            className="w-full"
+            id={`${formId}-calories`}
+          />
+          <div className="text-xs text-center mt-1">
+            <span className="font-medium">{calories} kcal</span>{" "}
+            <span className="text-muted-foreground">
+              {(() => {
+                if (calories <= 400) return "- Light meal (100–300 kcal)";
+                if (calories <= 600) return "- Balanced meal (300–500 kcal)";
+                if (calories <= 900) return "- High-fuel meal (600–800 kcal)";
+                if (calories <= 1200) return "- Super Heavy meal (900–1200 kcal)";
 
-          <div className="mt-4">
-            <label htmlFor={`${formId}-calories`} className="block text-sm mb-1">
-              Desired calories
-            </label>
-            <input
-              type="range"
-              min={200}
-              max={2000}
-              step={50}
-              value={calories}
-              onChange={e => setCalories(Number(e.target.value))}
-              className="w-full"
-              id={`${formId}-calories`}
-            />
-            <div className="text-xs text-center">{calories} kcal</div>
+                return "- High Intensity Athlete Meal (1200+ kcal)";
+              })()}
+            </span>
           </div>
-
-          <div className="flex space-x-4 mt-4">
-            {MACRO_TYPES.map(m => (
-              <label key={`${formId}-macro-${m}`} className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name={`${formId}-macroType`}
-                  value={m}
-                  checked={macroType === m}
-                  onChange={() => setMacroType(m as any)}
-                />
-                <span>{m}</span>
-              </label>
+  
+          {/* Meal Type (Macro) Section */}
+          <h3 className="text-md font-semibold text-[#496028] mt-4 mb-1">Meal Type</h3>
+          <div className="grid grid-cols-2 gap-3">
+            {["Protein-Intensive", "Carb-Intensive", "Balanced", "Random"].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMacroType(m as any)}
+                className={`
+                  px-3 py-1.5 text-sm rounded-md font-medium transition-all
+                  ${macroType === m 
+                    ? "bg-[#496028] text-white" 
+                    : "bg-gray-100 text-black hover:bg-[#496028]/90 hover:text-white"}
+                `}
+              >
+                {m}
+              </button>
             ))}
           </div>
-
+  
+          {/* Submit button */}
           <Button
             onClick={handleSubmit}
             disabled={loading || (selectedCuisine === "Custom..." && !customCuisine)}
-            className="w-full mt-6"
+            className="w-full mt-6 border-2 bg-[#496028] text-white font-bold hover:bg-[#3b4f21] hover:text-white transition-colors duration-200"
           >
             {loading ? "Generating recipes..." : "Generate Recipe Options"}
           </Button>
