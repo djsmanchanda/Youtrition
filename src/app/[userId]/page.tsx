@@ -44,6 +44,9 @@ export default async function UserHome({ params }: PageProps) {
           </Button>
         </Link>
         <Button className="bg-black text-white px-4 py-2 text-sm italic" disabled>
+          What's in my fridge?
+        </Button>
+        <Button className="bg-black text-white px-4 py-2 text-sm italic" disabled>
           More features coming soon
         </Button>
       </div>
