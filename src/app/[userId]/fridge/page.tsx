@@ -20,18 +20,30 @@ export default function FridgePage() {
 
   const startCamera = async () => {
     setError(null);
+
+    if (
+      typeof window === "undefined" ||
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia
+    ) {
+      setError("Your browser does not support camera access. Try Chrome or Safari.");
+      return;
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } }, // rear camera
+        video: { facingMode: { ideal: "environment" } },
       });
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
       }
+
       setStep("capture");
-    } catch (err) {
-      console.error(err);
-      setError("Unable to access camera.");
+    } catch (err: any) {
+      console.error("startCamera error:", err);
+      setError("Permission denied or camera unavailable. Please try again.");
     }
   };
 
@@ -98,18 +110,47 @@ export default function FridgePage() {
   };
 
   return (
-    <main className="max-w-3xl mx-auto pt-20 px-6 space-y-6"> {/* pt-20 adds spacing below logo */}
+    <main className="max-w-3xl mx-auto pt-20 px-6 space-y-6">
       {step === "start" && (
         <div className="text-center space-y-4">
           <h1 className="text-3xl font-bold">What’s in My Fridge?</h1>
           <Button onClick={startCamera}>Start Scanning</Button>
-          {error && <p className="text-red-500">{error}</p>}
+          {error && (
+            <div className="text-red-500 space-y-2">
+              <p>{error}</p>
+              <Button onClick={startCamera} className="bg-black text-white">
+                Try Again
+              </Button>
+              <div>
+                <label
+                  htmlFor="fridge-upload"
+                  className="cursor-pointer text-blue-600 underline text-sm"
+                >
+                  Or upload photos instead
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  id="fridge-upload"
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files) {
+                      const blobs = Array.from(files).slice(0, 10);
+                      setPhotos(blobs);
+                      setStep("capture");
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {step === "capture" && (
         <div className="space-y-4">
-          {/* Cream colored camera box */}
           <div className="rounded-2xl bg-[#fef9f3] border border-gray-200 p-4 shadow-md">
             <video ref={videoRef} autoPlay playsInline className="rounded w-full" />
           </div>
