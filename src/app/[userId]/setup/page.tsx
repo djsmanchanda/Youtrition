@@ -326,7 +326,6 @@ export default function SetupPage() {
                     </button>
                   ))}
                 </div>
-
                 <input
                   ref={setInputRef}
                   type="text"
