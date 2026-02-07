@@ -5,31 +5,19 @@ import { NextRequest, NextResponse } from "next/server";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // 1. Redirect "/"  →  "/1"
-  if (pathname === "/") {
-    return NextResponse.redirect(new URL("/1", req.url));
-  }
-
-  // 2. Allow Next.js internals, APIs, and public assets
-  if (
-    pathname === "/404" ||
-    pathname.startsWith("/_next") ||
-    pathname.startsWith("/api") ||
-    pathname === "/favicon.ico" ||
-    pathname === "/robots.txt" ||
-    pathname === "/sitemap.xml" ||
-    /\.[^/]+$/.test(pathname)
-  ) {
+  // 1. Allow root path, API routes, and static assets
+  if (pathname === "/" || pathname.startsWith("/api/") || pathname.startsWith("/_next/")) {
     return NextResponse.next();
   }
 
-  // 3. Allow only numeric top‑level paths ( /123 or /123/... )
-  const isNumeric = /^\/\d+(\/.*)?$/.test(pathname);
-  if (!isNumeric) {
-    return NextResponse.rewrite(new URL("/404", req.url));   // or let Next handle default 404
+  // 2. For dynamic user routes, validate numeric ID format ( /123 or /123/... )
+  const isNumericUserRoute = /^\/\d+(\/.*)?$/.test(pathname);
+  if (!isNumericUserRoute) {
+    // Allow Next.js to handle 404 naturally for invalid routes
+    return NextResponse.next();
   }
 
-  // 4. Continue as normal
+  // 3. Continue as normal
   return NextResponse.next();
 }
 
